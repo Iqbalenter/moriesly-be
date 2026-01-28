@@ -1,0 +1,28 @@
+meta {
+  name: Get Dashboard
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/home/dashboard
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Dashboard
+  
+  Mendapatkan semua data untuk home dashboard (rank, profile, status).
+  
+  ### Response:
+  Berisi data lengkap user termasuk:
+  - Current rank
+  - Profile data
+  - Status kesehatan
+  - Goal progress
+}

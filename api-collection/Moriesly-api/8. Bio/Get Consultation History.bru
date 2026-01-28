@@ -1,0 +1,25 @@
+meta {
+  name: Get Consultation History
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/bio/consultation/history?limit=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 10
+}
+
+docs {
+  ## Get Consultation History
+  
+  Mendapatkan riwayat semua konsultasi.
+}

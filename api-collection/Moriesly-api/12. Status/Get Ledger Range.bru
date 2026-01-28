@@ -1,0 +1,30 @@
+meta {
+  name: Get Ledger Range
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/status/ledger-range?startDate=2026-01-20&endDate=2026-01-27
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  startDate: 2026-01-20
+  endDate: 2026-01-27
+}
+
+docs {
+  ## Get Ledger Range
+  
+  Mendapatkan ledger data untuk rentang tanggal.
+  
+  ### Query Parameters:
+  - `startDate` (string, required): Tanggal mulai (YYYY-MM-DD)
+  - `endDate` (string, required): Tanggal selesai (YYYY-MM-DD)
+}

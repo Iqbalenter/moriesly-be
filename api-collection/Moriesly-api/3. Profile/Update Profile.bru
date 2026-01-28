@@ -1,0 +1,55 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "displayName": "Updated Name",
+    "age": 26,
+    "height": 172,
+    "activityLevel": "active"
+  }
+}
+
+docs {
+  ## Update Profile
+  
+  Mengupdate data profil user.
+  
+  ### Body Parameters (semua optional):
+  - `displayName` (string): Nama tampilan
+  - `age` (number): Umur
+  - `gender` (string): Jenis kelamin
+  - `height` (number): Tinggi badan (cm)
+  - `weight` (number): Berat badan (kg)
+  - `activityLevel` (string): Level aktivitas
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Profile updated successfully",
+    "data": {
+      "userId": "firebase_uid",
+      "displayName": "Updated Name",
+      ...
+    }
+  }
+  ```
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Get Subscription
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/subscription
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Subscription
+  
+  Mendapatkan info subscription, permissions, dan usage user.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "role": "premium",
+      "permissions": {
+        "canAIChat": true,
+        "canGenerateDietPlan": true,
+        "canSkinScan": true
+      },
+      "limits": {
+        "maxScansPerDay": 50,
+        "maxChatMessagesPerDay": 100
+      },
+      "expiryDate": "2026-12-31"
+    }
+  }
+  ```
+}

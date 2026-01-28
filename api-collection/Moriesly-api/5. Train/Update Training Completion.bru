@@ -1,0 +1,54 @@
+meta {
+  name: Update Training Completion
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/train/daily/2026-01-27/completion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "workout",
+    "index": 0,
+    "completed": true
+  }
+}
+
+docs {
+  ## Update Training Completion
+  
+  Menandai workout atau meal sebagai selesai.
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Body Parameters:
+  - `type` (string, required): "workout" atau "meal"
+  - `index` (number, required): Index item dalam array
+  - `completed` (boolean, required): Status completion
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Completion updated",
+    "data": {
+      "type": "workout",
+      "index": 0,
+      "completed": true
+    }
+  }
+  ```
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Get Skin Scan History
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/bio/skin-scan/history?limit=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 10
+}
+
+docs {
+  ## Get Skin Scan History
+  
+  Mendapatkan riwayat semua skin scans.
+}

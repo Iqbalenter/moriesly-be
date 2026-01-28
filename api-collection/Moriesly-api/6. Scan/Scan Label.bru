@@ -1,0 +1,45 @@
+meta {
+  name: Scan Label
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/scan/label
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/nutrition-label.jpg)
+}
+
+docs {
+  ## Scan Label
+  
+  Scan nutrition label/kemasan makanan untuk extract informasi nutrisi.
+  
+  ### Body (multipart/form-data):
+  - `image` (file, required): Gambar label nutrisi
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "productName": "Susu UHT Cokelat",
+      "servingSize": "200ml",
+      "calories": 180,
+      "protein": 6,
+      "carbs": 28,
+      "fat": 5,
+      "sugar": 20,
+      "fiber": 0
+    }
+  }
+  ```
+}

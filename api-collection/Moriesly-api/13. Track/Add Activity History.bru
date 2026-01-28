@@ -1,0 +1,36 @@
+meta {
+  name: Add Activity History
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/track/history
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "action": "workout",
+    "description": "Completed morning cardio session",
+    "metadata": {
+      "duration": "30 minutes",
+      "calories": 250
+    }
+  }
+}
+
+docs {
+  ## Add Activity History
+  
+  Menambahkan manual activity log entry.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Daily Check-In
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/home/checkin
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Daily Check-In
+  
+  Melakukan check-in harian untuk mendapatkan streak.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Check-in successful",
+    "data": {
+      "streak": 5,
+      "lastCheckin": "2026-01-27"
+    }
+  }
+  ```
+}

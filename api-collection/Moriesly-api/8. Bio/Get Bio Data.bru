@@ -1,0 +1,28 @@
+meta {
+  name: Get Bio Data
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/bio
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Bio Data
+  
+  Mendapatkan complete biological/health data user.
+  
+  ### Response:
+  Data lengkap kesehatan termasuk:
+  - Profile data
+  - Medical history
+  - Allergies
+  - Health conditions
+}

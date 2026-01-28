@@ -1,0 +1,37 @@
+meta {
+  name: Get Daily Training Plan
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/train/daily/2026-01-27
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Daily Training Plan
+  
+  Mendapatkan training plan berdasarkan tanggal.
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "date": "2026-01-27",
+      "workouts": [...],
+      "completed": false
+    }
+  }
+  ```
+}

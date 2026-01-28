@@ -1,0 +1,30 @@
+meta {
+  name: Get Logs by Date Range
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/foodlog?startDate=2026-01-20&endDate=2026-01-27
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  startDate: 2026-01-20
+  endDate: 2026-01-27
+}
+
+docs {
+  ## Get Logs by Date Range
+  
+  Mendapatkan food logs berdasarkan rentang tanggal.
+  
+  ### Query Parameters:
+  - `startDate` (string, required): Tanggal mulai (YYYY-MM-DD)
+  - `endDate` (string, required): Tanggal selesai (YYYY-MM-DD)
+}

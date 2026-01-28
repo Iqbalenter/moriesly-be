@@ -1,0 +1,36 @@
+meta {
+  name: Verify Token
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/users/verify-token
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Verify Token
+  
+  Memverifikasi apakah authentication token masih valid.
+  
+  ### Headers:
+  - `Authorization: Bearer <token>`
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Token is valid",
+    "data": {
+      "userId": "firebase_uid",
+      "email": "testuser@example.com"
+    }
+  }
+  ```
+}

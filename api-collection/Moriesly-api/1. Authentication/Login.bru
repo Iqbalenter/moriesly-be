@@ -1,0 +1,57 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/users/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "testuser@example.com",
+    "password": "Test@12345"
+  }
+}
+
+script:post-response {
+  // Simpan token ke environment variable
+  if (res.status === 200 && res.body.data && res.body.data.token) {
+    bru.setEnvVar("authToken", res.body.data.token);
+  }
+}
+
+docs {
+  ## Login
+  
+  Login user dan mendapatkan authentication token.
+  
+  ### Body Parameters:
+  - `email` (string, required): Email user
+  - `password` (string, required): Password user
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "data": {
+      "token": "firebase_id_token",
+      "user": {
+        "userId": "firebase_uid",
+        "email": "testuser@example.com",
+        "displayName": "Test User"
+      }
+    }
+  }
+  ```
+  
+  **Note:** Token akan otomatis disimpan ke environment variable `authToken`
+}

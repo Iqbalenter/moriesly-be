@@ -1,0 +1,38 @@
+meta {
+  name: Get Active Diet Plan
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/diet/active-plan
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Active Diet Plan
+  
+  Mendapatkan diet plan yang sedang aktif.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "startDate": "2026-01-27",
+      "endDate": "2026-02-02",
+      "meals": [...],
+      "progress": {
+        "completed": 5,
+        "total": 21
+      }
+    }
+  }
+  ```
+}

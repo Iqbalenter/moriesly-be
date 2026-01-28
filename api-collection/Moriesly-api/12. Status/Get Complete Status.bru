@@ -1,0 +1,29 @@
+meta {
+  name: Get Complete Status
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Complete Status
+  
+  Mendapatkan complete status data (profile, ledger, goal, weight history).
+  
+  ### Response:
+  Data lengkap status kesehatan termasuk:
+  - Profile overview
+  - Current ledger
+  - Goal progress
+  - Weight history
+  - Health metrics
+}

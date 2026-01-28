@@ -1,0 +1,46 @@
+meta {
+  name: Save Daily Training Plan
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/train/daily/2026-01-27
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workouts": [
+      {
+        "exercise": "Squats",
+        "sets": 4,
+        "reps": 15,
+        "duration": "20 minutes"
+      }
+    ],
+    "meals": []
+  }
+}
+
+docs {
+  ## Save Daily Training Plan
+  
+  Menyimpan atau mengupdate training plan untuk tanggal tertentu.
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Body Parameters:
+  - `workouts` (array, required): Daftar workout
+  - `meals` (array, optional): Daftar meals (jika ada)
+}

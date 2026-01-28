@@ -1,0 +1,56 @@
+meta {
+  name: Get Shopping List
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/diet/shopping-list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": "plan_id",
+    "days": 7
+  }
+}
+
+docs {
+  ## Get Shopping List
+  
+  Generate shopping list berdasarkan diet plan.
+  
+  ### Body Parameters:
+  - `planId` (string, required): ID diet plan
+  - `days` (number, optional): Jumlah hari (default: 7)
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "shoppingList": [
+        {
+          "category": "Vegetables",
+          "items": [
+            {
+              "name": "Broccoli",
+              "quantity": "500g"
+            }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+}

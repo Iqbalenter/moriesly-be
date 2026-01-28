@@ -1,0 +1,46 @@
+meta {
+  name: Scan Food
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/scan/food
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/food-image.jpg)
+}
+
+docs {
+  ## Scan Food
+  
+  Scan makanan dari foto untuk mendapatkan informasi nutrisi menggunakan AI.
+  
+  ### Body (multipart/form-data):
+  - `image` (file, required): Gambar makanan (JPG, PNG)
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "foodName": "Nasi Goreng",
+      "calories": 450,
+      "protein": 15,
+      "carbs": 60,
+      "fat": 18,
+      "portion": "1 piring",
+      "confidence": 0.85
+    }
+  }
+  ```
+  
+  **Note:** Ganti `/path/to/food-image.jpg` dengan path file gambar yang sesuai
+}

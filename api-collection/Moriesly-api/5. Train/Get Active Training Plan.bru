@@ -1,0 +1,38 @@
+meta {
+  name: Get Active Training Plan
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/train/active-plan
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Active Training Plan
+  
+  Mendapatkan training plan yang sedang aktif.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "startDate": "2026-01-27",
+      "endDate": "2026-02-02",
+      "workouts": [...],
+      "progress": {
+        "completed": 10,
+        "total": 35
+      }
+    }
+  }
+  ```
+}

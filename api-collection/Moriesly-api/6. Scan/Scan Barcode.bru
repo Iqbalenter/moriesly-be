@@ -1,0 +1,50 @@
+meta {
+  name: Scan Barcode
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/scan/barcode
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "barcode": "8992753123456"
+  }
+}
+
+docs {
+  ## Scan Barcode
+  
+  Scan barcode produk untuk mendapatkan informasi nutrisi dari database.
+  
+  ### Body Parameters:
+  - `barcode` (string, required): Nomor barcode produk
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "productName": "Indomie Goreng",
+      "brand": "Indomie",
+      "servingSize": "85g",
+      "calories": 390,
+      "protein": 8,
+      "carbs": 58,
+      "fat": 14
+    }
+  }
+  ```
+}

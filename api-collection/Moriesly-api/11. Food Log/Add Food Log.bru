@@ -1,0 +1,46 @@
+meta {
+  name: Add Food Log
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/foodlog
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "foodName": "Nasi Goreng",
+    "calories": 450,
+    "protein": 15,
+    "carbs": 60,
+    "fat": 18,
+    "mealType": "lunch",
+    "portion": "1 piring"
+  }
+}
+
+docs {
+  ## Add Food Log
+  
+  Menambahkan entry food log baru.
+  
+  ### Body Parameters:
+  - `foodName` (string, required): Nama makanan
+  - `calories` (number, required): Kalori
+  - `protein` (number, optional): Protein (g)
+  - `carbs` (number, optional): Karbohidrat (g)
+  - `fat` (number, optional): Lemak (g)
+  - `mealType` (string, optional): Tipe meal
+  - `portion` (string, optional): Ukuran porsi
+}

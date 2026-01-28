@@ -1,0 +1,39 @@
+meta {
+  name: Get Training Completion
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/train/daily/2026-01-27/completion
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Training Completion
+  
+  Mendapatkan status completion untuk training plan pada tanggal tertentu.
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "date": "2026-01-27",
+      "workoutsCompleted": 2,
+      "totalWorkouts": 5,
+      "mealsCompleted": 3,
+      "totalMeals": 3,
+      "completionPercentage": 71
+    }
+  }
+  ```
+}

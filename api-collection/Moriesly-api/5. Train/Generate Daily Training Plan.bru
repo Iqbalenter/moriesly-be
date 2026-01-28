@@ -1,0 +1,57 @@
+meta {
+  name: Generate Daily Training Plan
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/train/generate-daily
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "category": "strength",
+    "focusArea": "upper_body",
+    "difficulty": "intermediate"
+  }
+}
+
+docs {
+  ## Generate Daily Training Plan
+  
+  Generate rencana latihan harian menggunakan AI.
+  
+  ### Body Parameters:
+  - `category` (string, required): Kategori latihan (strength, cardio, flexibility)
+  - `focusArea` (string, optional): Area fokus (upper_body, lower_body, full_body)
+  - `difficulty` (string, optional): Tingkat kesulitan (beginner, intermediate, advanced)
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "date": "2026-01-27",
+      "workouts": [
+        {
+          "exercise": "Push-ups",
+          "sets": 3,
+          "reps": 12,
+          "duration": "15 minutes"
+        }
+      ]
+    }
+  }
+  ```
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Get Goal
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/status/goal
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Goal
+  
+  Mendapatkan current goal dan progress.
+}

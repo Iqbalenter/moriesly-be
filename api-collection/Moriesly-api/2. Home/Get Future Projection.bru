@@ -1,0 +1,33 @@
+meta {
+  name: Get Future Projection
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/home/future-projection
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Future Projection
+  
+  Mendapatkan current goal dan proyeksi pencapaian.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "goal": {...},
+      "currentProgress": 50,
+      "projectedDate": "2026-05-15"
+    }
+  }
+  ```
+}

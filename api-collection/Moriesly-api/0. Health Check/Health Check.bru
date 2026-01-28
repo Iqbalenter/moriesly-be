@@ -1,0 +1,29 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/../health
+  body: none
+  auth: none
+}
+
+docs {
+  ## Health Check
+  
+  Mengecek apakah server backend berjalan dengan baik.
+  
+  **Note:** Endpoint ini tidak memerlukan authentication.
+  
+  ### Response:
+  ```json
+  {
+    "status": "OK",
+    "message": "Moriesly Backend is running!"
+  }
+  ```
+  
+  **Usage:** Gunakan endpoint ini sebelum testing yang lain untuk memastikan server sudah running.
+}

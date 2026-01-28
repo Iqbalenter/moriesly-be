@@ -1,0 +1,39 @@
+meta {
+  name: Get Current User
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/users/current
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Current User
+  
+  Mendapatkan data lengkap user yang sedang login.
+  
+  ### Headers:
+  - `Authorization: Bearer <token>`
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "userId": "firebase_uid",
+      "email": "testuser@example.com",
+      "displayName": "Test User",
+      "profile": {...},
+      "goal": {...},
+      "subscription": {...}
+    }
+  }
+  ```
+}

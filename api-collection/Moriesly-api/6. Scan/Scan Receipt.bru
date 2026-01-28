@@ -1,0 +1,47 @@
+meta {
+  name: Scan Receipt
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/scan/receipt
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/receipt.jpg)
+}
+
+docs {
+  ## Scan Receipt
+  
+  Scan struk belanja untuk extract daftar produk dan harga.
+  
+  ### Body (multipart/form-data):
+  - `image` (file, required): Gambar struk belanja
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "storeName": "Alfamart",
+      "date": "2026-01-27",
+      "items": [
+        {
+          "name": "Susu UHT",
+          "quantity": 2,
+          "price": 24000
+        }
+      ],
+      "total": 50000
+    }
+  }
+  ```
+}

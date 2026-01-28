@@ -1,0 +1,47 @@
+meta {
+  name: Scan Skin
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/scan/skin
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/skin-photo.jpg)
+}
+
+docs {
+  ## Scan Skin
+  
+  Scan kulit untuk analisis kondisi kesehatan kulit menggunakan AI.
+  
+  ### Body (multipart/form-data):
+  - `image` (file, required): Gambar kulit/wajah
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "skinType": "combination",
+      "concerns": ["acne", "dark_spots"],
+      "hydrationLevel": "moderate",
+      "recommendations": [
+        "Use gentle cleanser",
+        "Apply moisturizer daily"
+      ],
+      "skinScore": 72
+    }
+  }
+  ```
+  
+  **Note:** Fitur ini memerlukan permission `canSkinScan`
+}

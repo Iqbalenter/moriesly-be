@@ -1,0 +1,36 @@
+meta {
+  name: Upgrade Subscription
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/subscription/upgrade
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": "premium",
+    "paymentMethod": "credit_card"
+  }
+}
+
+docs {
+  ## Upgrade Subscription
+  
+  Upgrade subscription ke plan yang lebih tinggi.
+  
+  ### Body Parameters:
+  - `planId` (string, required): ID plan yang dipilih
+  - `paymentMethod` (string, required): Metode pembayaran
+}

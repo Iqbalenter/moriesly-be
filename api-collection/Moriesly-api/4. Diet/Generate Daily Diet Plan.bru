@@ -1,0 +1,59 @@
+meta {
+  name: Generate Daily Diet Plan
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/diet/generate-daily
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "category": "weight_loss",
+    "inputMode": "auto"
+  }
+}
+
+docs {
+  ## Generate Daily Diet Plan
+  
+  Generate meal plan harian menggunakan AI.
+  
+  ### Body Parameters:
+  - `category` (string, required): Kategori diet (weight_loss, muscle_gain, maintain)
+  - `inputMode` (string, required): Mode input ("auto" atau "manual")
+  - `manualGoal` (string, optional): Goal manual jika mode "manual"
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "date": "2026-01-27",
+      "meals": [
+        {
+          "mealType": "breakfast",
+          "foodName": "Oatmeal with Banana",
+          "calories": 350,
+          "protein": 10,
+          "carbs": 60,
+          "fat": 7
+        }
+      ],
+      "totalCalories": 1500
+    }
+  }
+  ```
+}

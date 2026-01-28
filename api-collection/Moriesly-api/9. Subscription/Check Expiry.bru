@@ -1,0 +1,33 @@
+meta {
+  name: Check Expiry
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/subscription/check-expiry
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Check Expiry
+  
+  Mengecek apakah subscription sudah expired.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "expired": false,
+      "expiryDate": "2026-12-31",
+      "daysRemaining": 338
+    }
+  }
+  ```
+}

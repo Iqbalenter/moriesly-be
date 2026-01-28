@@ -1,0 +1,37 @@
+meta {
+  name: Get Ledger by Date
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/home/ledger/2026-01-27
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Ledger by Date
+  
+  Mendapatkan daily ledger berdasarkan tanggal (format: YYYY-MM-DD).
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "date": "2026-01-27",
+      "totalCalories": 2000,
+      "totalProtein": 100,
+      "activities": [...]
+    }
+  }
+  ```
+}

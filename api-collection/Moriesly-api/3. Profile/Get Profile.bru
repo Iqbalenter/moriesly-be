@@ -1,0 +1,38 @@
+meta {
+  name: Get Profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/profile
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Profile
+  
+  Mendapatkan data profil user yang sedang login.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "userId": "firebase_uid",
+      "email": "testuser@example.com",
+      "displayName": "Test User",
+      "age": 25,
+      "gender": "male",
+      "height": 170,
+      "weight": 70,
+      "activityLevel": "moderate"
+    }
+  }
+  ```
+}

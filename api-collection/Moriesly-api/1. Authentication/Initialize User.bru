@@ -1,0 +1,67 @@
+meta {
+  name: Initialize User
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/users/initialize
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "profile": {
+      "age": 25,
+      "gender": "male",
+      "height": 170,
+      "weight": 70,
+      "activityLevel": "moderate"
+    },
+    "goal": {
+      "type": "lose_weight",
+      "targetWeight": 65,
+      "targetDate": "2026-06-01"
+    }
+  }
+}
+
+docs {
+  ## Initialize User
+  
+  Inisialisasi data lengkap user setelah registrasi (onboarding).
+  
+  ### Body Parameters:
+  - `profile` (object): Data profil user
+    - `age` (number): Umur
+    - `gender` (string): Jenis kelamin
+    - `height` (number): Tinggi badan (cm)
+    - `weight` (number): Berat badan (kg)
+    - `activityLevel` (string): Level aktivitas
+  - `goal` (object): Target user
+    - `type` (string): Tipe goal
+    - `targetWeight` (number): Target berat
+    - `targetDate` (string): Target tanggal
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "User initialized successfully",
+    "data": {
+      "userId": "firebase_uid",
+      "profile": {...},
+      "goal": {...}
+    }
+  }
+  ```
+}

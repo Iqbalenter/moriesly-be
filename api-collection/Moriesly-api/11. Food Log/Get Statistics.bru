@@ -1,0 +1,34 @@
+meta {
+  name: Get Statistics
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/foodlog/statistics
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Statistics
+  
+  Mendapatkan statistik food logs (rata-rata kalori, dll).
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "averageCalories": 1800,
+      "averageProtein": 90,
+      "totalLogs": 150,
+      "weeklyTrend": "increasing"
+    }
+  }
+  ```
+}

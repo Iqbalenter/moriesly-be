@@ -1,0 +1,32 @@
+meta {
+  name: Update Goal Progress
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/status/goal/progress
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "progress": 65,
+    "notes": "Making good progress"
+  }
+}
+
+docs {
+  ## Update Goal Progress
+  
+  Mengupdate progress goal secara manual.
+}

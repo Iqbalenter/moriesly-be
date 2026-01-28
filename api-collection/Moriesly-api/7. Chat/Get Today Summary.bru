@@ -1,0 +1,37 @@
+meta {
+  name: Get Today Summary
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/chat/summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Today Summary
+  
+  Mendapatkan ringkasan percakapan hari ini.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "date": "2026-01-27",
+      "totalMessages": 15,
+      "summary": "Hari ini kita membahas...",
+      "keyPoints": [
+        "Diet plan progress",
+        "Workout recommendations"
+      ]
+    }
+  }
+  ```
+}

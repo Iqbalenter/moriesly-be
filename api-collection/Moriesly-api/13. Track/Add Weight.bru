@@ -1,0 +1,33 @@
+meta {
+  name: Add Weight
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/track/weight
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "weight": 69.5,
+    "date": "2026-01-27",
+    "notes": "Morning weight after workout"
+  }
+}
+
+docs {
+  ## Add Weight
+  
+  Menambahkan new weight entry untuk tracking.
+}

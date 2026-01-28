@@ -1,0 +1,41 @@
+# =====================================================
+# Scripts folder .gitignore
+# =====================================================
+
+# Backup files dari migration
+backup-*.json
+report-*.json
+export-*.json
+
+# Log files
+*.log
+migration-*.log
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (jika ada test di scripts)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Output files
+output/
+exports/
+backups/

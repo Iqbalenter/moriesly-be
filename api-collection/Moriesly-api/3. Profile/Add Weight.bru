@@ -1,0 +1,51 @@
+meta {
+  name: Add Weight
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/profile/weight
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "weight": 69.5,
+    "date": "2026-01-27",
+    "notes": "Morning weight"
+  }
+}
+
+docs {
+  ## Add Weight
+  
+  Menambahkan entry berat badan baru.
+  
+  ### Body Parameters:
+  - `weight` (number, required): Berat badan (kg)
+  - `date` (string, optional): Tanggal (YYYY-MM-DD, default: hari ini)
+  - `notes` (string, optional): Catatan tambahan
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Weight added successfully",
+    "data": {
+      "weightId": "weight_id",
+      "weight": 69.5,
+      "date": "2026-01-27"
+    }
+  }
+  ```
+}

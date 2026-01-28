@@ -1,0 +1,40 @@
+meta {
+  name: Get Usage Stats
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/subscription/usage
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Usage Stats
+  
+  Mendapatkan statistik penggunaan harian/bulanan.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "today": {
+        "scans": 5,
+        "chatMessages": 20,
+        "aiGenerations": 2
+      },
+      "limits": {
+        "scans": 50,
+        "chatMessages": 100,
+        "aiGenerations": 10
+      }
+    }
+  }
+  ```
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Save Diet Plan
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/diet/save-plan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": "plan_id",
+    "startDate": "2026-01-27",
+    "endDate": "2026-02-02",
+    "meals": [...]
+  }
+}
+
+docs {
+  ## Save Diet Plan
+  
+  Menyimpan diet plan yang sudah di-generate atau custom.
+  
+  ### Body Parameters:
+  - `planId` (string, optional): ID plan (auto-generate jika tidak ada)
+  - `startDate` (string, required): Tanggal mulai
+  - `endDate` (string, required): Tanggal selesai
+  - `meals` (array, required): Daftar meals
+}

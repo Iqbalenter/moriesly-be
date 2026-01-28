@@ -1,0 +1,33 @@
+meta {
+  name: Get Feed Usage
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/feed/usage
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Feed Usage
+  
+  Mendapatkan usage feed generation untuk hari ini.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "todayGenerations": 3,
+      "limit": 10,
+      "remaining": 7
+    }
+  }
+  ```
+}

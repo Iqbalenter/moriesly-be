@@ -1,0 +1,36 @@
+meta {
+  name: Save Skin Scan Result
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/bio/skin-scan/save
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "scanResult": {
+      "skinType": "combination",
+      "concerns": ["acne"],
+      "skinScore": 75
+    },
+    "imageUrl": "https://..."
+  }
+}
+
+docs {
+  ## Save Skin Scan Result
+  
+  Menyimpan hasil skin scan ke history user.
+}

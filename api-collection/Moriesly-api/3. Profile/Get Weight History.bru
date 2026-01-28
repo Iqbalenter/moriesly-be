@@ -1,0 +1,46 @@
+meta {
+  name: Get Weight History
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/profile/weight?limit=30
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 30
+}
+
+docs {
+  ## Get Weight History
+  
+  Mendapatkan riwayat berat badan untuk chart tracking.
+  
+  ### Query Parameters:
+  - `limit` (number, optional): Jumlah maksimal data (default: 30)
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "weights": [
+        {
+          "weightId": "weight_id",
+          "weight": 69.5,
+          "date": "2026-01-27",
+          "notes": "Morning weight"
+        }
+      ],
+      "trend": "decreasing"
+    }
+  }
+  ```
+}

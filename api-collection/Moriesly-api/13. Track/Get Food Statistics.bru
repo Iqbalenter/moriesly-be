@@ -1,0 +1,21 @@
+meta {
+  name: Get Food Statistics
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/track/food-statistics
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Food Statistics
+  
+  Mendapatkan food logs statistics/charts.
+}

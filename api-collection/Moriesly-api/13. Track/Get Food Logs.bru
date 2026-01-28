@@ -1,0 +1,26 @@
+meta {
+  name: Get Food Logs
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/track/food-logs?startDate=2026-01-20&endDate=2026-01-27
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  startDate: 2026-01-20
+  endDate: 2026-01-27
+}
+
+docs {
+  ## Get Food Logs
+  
+  Mendapatkan food logs by date range.
+}

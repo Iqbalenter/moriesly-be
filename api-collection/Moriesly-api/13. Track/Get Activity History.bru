@@ -1,0 +1,25 @@
+meta {
+  name: Get Activity History
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/track/history?limit=50
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 50
+}
+
+docs {
+  ## Get Activity History
+  
+  Mendapatkan activity history/timeline.
+}

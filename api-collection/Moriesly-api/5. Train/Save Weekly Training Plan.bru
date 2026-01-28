@@ -1,0 +1,44 @@
+meta {
+  name: Save Weekly Training Plan
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/train/weekly-plan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "startDate": "2026-01-27",
+    "endDate": "2026-02-02",
+    "workouts": [
+      {
+        "day": "Monday",
+        "date": "2026-01-27",
+        "exercises": [...]
+      }
+    ]
+  }
+}
+
+docs {
+  ## Save Weekly Training Plan
+  
+  Menyimpan custom weekly training plan (7 hari).
+  
+  ### Body Parameters:
+  - `startDate` (string, required): Tanggal mulai
+  - `endDate` (string, required): Tanggal selesai
+  - `workouts` (array, required): Daftar workout per hari
+}

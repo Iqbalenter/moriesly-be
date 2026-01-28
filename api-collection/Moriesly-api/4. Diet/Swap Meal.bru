@@ -1,0 +1,55 @@
+meta {
+  name: Swap Meal
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/diet/swap-meal
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": "plan_id",
+    "mealIndex": 0,
+    "reason": "Don't like oatmeal"
+  }
+}
+
+docs {
+  ## Swap Meal
+  
+  Mengganti meal tertentu dalam diet plan dengan alternatif.
+  
+  ### Body Parameters:
+  - `planId` (string, required): ID diet plan
+  - `mealIndex` (number, required): Index meal yang ingin diganti
+  - `reason` (string, optional): Alasan penggantian
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "newMeal": {
+        "mealType": "breakfast",
+        "foodName": "Greek Yogurt with Berries",
+        "calories": 300,
+        "protein": 15,
+        "carbs": 40,
+        "fat": 8
+      }
+    }
+  }
+  ```
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Get History by Action
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/track/history/by-action?action=workout&limit=20
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  action: workout
+  limit: 20
+}
+
+docs {
+  ## Get History by Action
+  
+  Mendapatkan history filtered by action type.
+  
+  ### Query Parameters:
+  - `action` (string, required): Tipe action (workout, meal, checkin, etc)
+  - `limit` (number, optional): Jumlah maksimal data
+}

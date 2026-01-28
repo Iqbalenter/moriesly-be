@@ -1,0 +1,35 @@
+meta {
+  name: Get Today Intake
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/home/today-intake
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Today Intake
+  
+  Mendapatkan daftar food intake hari ini.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "logs": [...],
+      "totalCalories": 1500,
+      "totalProtein": 80,
+      "totalCarbs": 150,
+      "totalFat": 50
+    }
+  }
+  ```
+}

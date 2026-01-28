@@ -1,0 +1,44 @@
+meta {
+  name: Get Available Plans
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/subscription/plans
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Available Plans
+  
+  Mendapatkan daftar subscription plans yang tersedia.
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "plans": [
+        {
+          "id": "free",
+          "name": "Free",
+          "price": 0,
+          "features": [...]
+        },
+        {
+          "id": "premium",
+          "name": "Premium",
+          "price": 99000,
+          "features": [...]
+        }
+      ]
+    }
+  }
+  ```
+}

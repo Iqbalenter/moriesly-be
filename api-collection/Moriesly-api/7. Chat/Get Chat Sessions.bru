@@ -1,0 +1,21 @@
+meta {
+  name: Get Chat Sessions
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/chat/sessions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Chat Sessions
+  
+  Mendapatkan daftar semua chat sessions user.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Save Consultation
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/bio/consultation
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "nutrition",
+    "notes": "Discussed meal planning strategies",
+    "recommendations": [
+      "Increase protein intake",
+      "Reduce sugar consumption"
+    ]
+  }
+}
+
+docs {
+  ## Save Consultation
+  
+  Menyimpan data sesi konsultasi.
+}

@@ -1,0 +1,45 @@
+meta {
+  name: Get History
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/home/history?limit=30
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 30
+}
+
+docs {
+  ## Get History
+  
+  Mendapatkan history log untuk calendar view.
+  
+  ### Query Parameters:
+  - `limit` (number, optional): Jumlah maksimal data (default: 30)
+  - `date` (string, optional): Filter berdasarkan tanggal
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "history": [
+        {
+          "date": "2026-01-27",
+          "action": "checkin",
+          "description": "Daily check-in"
+        }
+      ]
+    }
+  }
+  ```
+}

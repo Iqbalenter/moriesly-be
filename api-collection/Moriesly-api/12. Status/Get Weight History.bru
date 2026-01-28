@@ -1,0 +1,25 @@
+meta {
+  name: Get Weight History
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/status/weight-history?limit=30
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+params:query {
+  limit: 30
+}
+
+docs {
+  ## Get Weight History
+  
+  Mendapatkan weight history untuk chart/graph.
+}

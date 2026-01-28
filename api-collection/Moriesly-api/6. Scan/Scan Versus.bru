@@ -1,0 +1,53 @@
+meta {
+  name: Scan Versus
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/scan/versus
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image1: @file(/path/to/food1.jpg)
+  image2: @file(/path/to/food2.jpg)
+}
+
+docs {
+  ## Scan Versus
+  
+  Membandingkan dua makanan secara side-by-side untuk melihat perbedaan nutrisi.
+  
+  ### Body (multipart/form-data):
+  - `image1` (file, required): Gambar makanan pertama
+  - `image2` (file, required): Gambar makanan kedua
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "food1": {
+        "name": "Nasi Goreng",
+        "calories": 450,
+        "protein": 15
+      },
+      "food2": {
+        "name": "Mie Goreng",
+        "calories": 520,
+        "protein": 12
+      },
+      "comparison": {
+        "healthier": "food1",
+        "reason": "Lower calories and higher protein"
+      }
+    }
+  }
+  ```
+}

@@ -1,0 +1,44 @@
+meta {
+  name: Scan Food
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/home/scan-food
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/food-image.jpg)
+}
+
+docs {
+  ## Scan Food
+  
+  Scan makanan menggunakan kamera untuk analisis nutrisi.
+  
+  ### Body (multipart/form-data):
+  - `image` (file): Gambar makanan
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "foodName": "Nasi Goreng",
+      "calories": 450,
+      "protein": 15,
+      "carbs": 60,
+      "fat": 18
+    }
+  }
+  ```
+  
+  **Note:** Ganti path file dengan lokasi gambar yang sesuai
+}

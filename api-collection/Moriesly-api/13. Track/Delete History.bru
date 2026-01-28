@@ -1,0 +1,26 @@
+meta {
+  name: Delete History
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/track/history/history_id_here
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Delete History
+  
+  Menghapus history entry.
+  
+  ### URL Parameters:
+  - `historyId` (string): ID history yang akan dihapus
+  
+  **Note:** Ganti `history_id_here` dengan ID history yang sebenarnya
+}

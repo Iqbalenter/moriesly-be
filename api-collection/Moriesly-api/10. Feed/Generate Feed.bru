@@ -1,0 +1,55 @@
+meta {
+  name: Generate Feed
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/feed/generate
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "count": 5,
+    "recentHistory": []
+  }
+}
+
+docs {
+  ## Generate Feed
+  
+  Generate feed articles menggunakan Gemini 2.5 Flash.
+  
+  ### Body Parameters:
+  - `count` (number, optional): Jumlah artikel (default: 5)
+  - `recentHistory` (array, optional): History user untuk personalisasi
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "articles": [
+        {
+          "id": "article_1",
+          "title": "5 Tips Untuk Diet Sehat",
+          "summary": "...",
+          "category": "nutrition",
+          "readTime": "3 min"
+        }
+      ],
+      "generatedAt": "2026-01-27T10:00:00Z"
+    }
+  }
+  ```
+}

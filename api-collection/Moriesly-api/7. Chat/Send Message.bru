@@ -1,0 +1,50 @@
+meta {
+  name: Send Message
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/chat/message
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "message": "Halo, apa kabar hari ini?",
+    "context": "greeting"
+  }
+}
+
+docs {
+  ## Send Message
+  
+  Mengirim pesan ke AI assistant untuk konsultasi.
+  
+  ### Body Parameters:
+  - `message` (string, required): Pesan yang dikirim
+  - `context` (string, optional): Konteks percakapan
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "messageId": "msg_id",
+      "response": "Halo! Saya baik...",
+      "timestamp": "2026-01-27T10:00:00Z"
+    }
+  }
+  ```
+  
+  **Note:** Memerlukan permission `canAIChat` dan subject to daily limit
+}

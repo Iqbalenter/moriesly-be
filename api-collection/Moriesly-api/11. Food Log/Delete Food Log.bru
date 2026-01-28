@@ -1,0 +1,26 @@
+meta {
+  name: Delete Food Log
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/foodlog/log_id_here
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Delete Food Log
+  
+  Menghapus food log tertentu.
+  
+  ### URL Parameters:
+  - `logId` (string): ID food log yang akan dihapus
+  
+  **Note:** Ganti `log_id_here` dengan ID log yang sebenarnya
+}

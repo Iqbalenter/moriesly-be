@@ -1,0 +1,21 @@
+meta {
+  name: Get Latest Skin Scan
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/bio/skin-scan/latest
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Latest Skin Scan
+  
+  Mendapatkan hasil skin scan terakhir.
+}

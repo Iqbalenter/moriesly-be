@@ -1,0 +1,49 @@
+meta {
+  name: Register User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/users/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "testuser@example.com",
+    "password": "Test@12345",
+    "displayName": "Test User",
+    "role": "free"
+  }
+}
+
+docs {
+  ## Register User
+  
+  Mendaftarkan user baru ke sistem.
+  
+  ### Body Parameters:
+  - `email` (string, required): Email user
+  - `password` (string, required): Password minimal 6 karakter
+  - `displayName` (string, optional): Nama tampilan user
+  - `role` (string, optional): Role user (default: "free")
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "User registered successfully",
+    "data": {
+      "userId": "firebase_uid",
+      "email": "testuser@example.com",
+      "displayName": "Test User"
+    }
+  }
+  ```
+}

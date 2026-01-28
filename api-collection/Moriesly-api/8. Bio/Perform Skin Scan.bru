@@ -1,0 +1,27 @@
+meta {
+  name: Perform Skin Scan
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/bio/skin-scan
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:multipart-form {
+  image: @file(/path/to/skin-image.jpg)
+}
+
+docs {
+  ## Perform Skin Scan
+  
+  Melakukan scan kulit menggunakan AI analysis.
+  
+  **Note:** Memerlukan permission `canSkinScan`
+}

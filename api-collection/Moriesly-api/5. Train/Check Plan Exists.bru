@@ -1,0 +1,35 @@
+meta {
+  name: Check Plan Exists
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/train/daily/2026-01-27/check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Check Plan Exists
+  
+  Mengecek apakah training plan sudah ada untuk tanggal tertentu.
+  
+  ### URL Parameters:
+  - `date` (string): Tanggal dalam format YYYY-MM-DD
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "exists": true,
+      "planId": "plan_id"
+    }
+  }
+  ```
+}

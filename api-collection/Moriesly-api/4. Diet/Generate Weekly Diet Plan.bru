@@ -1,0 +1,56 @@
+meta {
+  name: Generate Weekly Diet Plan
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/diet/generate-weekly
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "category": "weight_loss",
+    "inputMode": "auto"
+  }
+}
+
+docs {
+  ## Generate Weekly Diet Plan
+  
+  Generate meal plan mingguan (7 hari) menggunakan AI.
+  
+  ### Body Parameters:
+  - `category` (string, required): Kategori diet
+  - `inputMode` (string, required): Mode input ("auto" atau "manual")
+  - `manualGoal` (string, optional): Goal manual jika mode "manual"
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "planId": "plan_id",
+      "startDate": "2026-01-27",
+      "endDate": "2026-02-02",
+      "weeklyPlan": [
+        {
+          "day": "Monday",
+          "date": "2026-01-27",
+          "meals": [...]
+        }
+      ]
+    }
+  }
+  ```
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Verify Consumption
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/diet/verify-consumption
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": "plan_id",
+    "mealIndex": 0,
+    "consumed": true
+  }
+}
+
+docs {
+  ## Verify Consumption
+  
+  Menandai meal sebagai sudah dikonsumsi atau belum.
+  
+  ### Body Parameters:
+  - `planId` (string, required): ID diet plan
+  - `mealIndex` (number, required): Index meal
+  - `consumed` (boolean, required): Status konsumsi
+  
+  ### Response:
+  ```json
+  {
+    "success": true,
+    "message": "Consumption verified",
+    "data": {
+      "mealIndex": 0,
+      "consumed": true,
+      "timestamp": "2026-01-27T08:30:00Z"
+    }
+  }
+  ```
+}

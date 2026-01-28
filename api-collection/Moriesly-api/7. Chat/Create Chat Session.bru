@@ -1,0 +1,36 @@
+meta {
+  name: Create Chat Session
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/chat/sessions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Diet Consultation",
+    "type": "consultation"
+  }
+}
+
+docs {
+  ## Create Chat Session
+  
+  Membuat sesi chat baru.
+  
+  ### Body Parameters:
+  - `title` (string, optional): Judul sesi
+  - `type` (string, optional): Tipe sesi
+}

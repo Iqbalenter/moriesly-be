@@ -1,0 +1,24 @@
+meta {
+  name: Get Status
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/home/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+docs {
+  ## Get Status
+  
+  Mendapatkan complete status data (profile, ledger, goal, weight).
+  
+  ### Response:
+  Berisi data lengkap status kesehatan user.
+}
