@@ -1,11 +1,11 @@
+// IMPORTANT: Load environment variables FIRST
+import "./config/env.config.js";
+
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 // Import routes yang terstruktur berdasarkan halaman FE
 import homeRoutes from "./routes/home.routes.js";
@@ -28,8 +28,6 @@ import subscriptionRoutes from "./routes/subscription.routes.js"; // Subscriptio
 // import { setupVideoCallHandlers } from "./controllers/videocall.controller.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
-dotenv.config();
-
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 8080; // Cloud Run menggunakan 8080 sebagai default
@@ -37,11 +35,12 @@ const PORT = process.env.PORT || 8080; // Cloud Run menggunakan 8080 sebagai def
 // Support multiple CORS origins via FRONTEND_URLS (comma-separated) or single FRONTEND_URL fallback
 const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-  : [process.env.FRONTEND_URL || "http://localhost:3000",
-    "https://moriesly.com"
-  ];
+      .map((s) => s.trim())
+      .filter(Boolean)
+  : [
+      process.env.FRONTEND_URL || "http://localhost:3000",
+      "https://moriesly.com",
+    ];
 
 const io = new Server(httpServer, {
   cors: {
@@ -170,6 +169,7 @@ app.use(errorHandler);
 
 // Start server
 httpServer.listen(PORT, () => {
+  console.log(`Port : ${PORT}`);
   console.log(`\n${"=".repeat(60)}`);
   console.log(`🚀 MORIESLY BACKEND SERVER`);
   console.log(`${"=".repeat(60)}`);
