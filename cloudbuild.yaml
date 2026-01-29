@@ -61,7 +61,7 @@ substitutions:
   _MAX_INSTANCES: "10"
   # Variabel di bawah harus diisi di Cloud Build Trigger Settings
   _NODE_ENV: "production"
-  _PORT: "8080"
+  _PORT: ""
   _FRONTEND_URL: ""
   _GEMINI_API_KEY: ""
   _FIREBASE_WEB_API_KEY: ""
