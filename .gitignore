@@ -10,7 +10,3 @@ firebase-service-account.json
 *-firebase-adminsdk-*.json
 project-*.json
 secrets/
-
-# Docker
-.dockerignore
-Dockerfile

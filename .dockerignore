@@ -1,0 +1,21 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+README.md
+.DS_Store
+*.log
+
+# Firebase service account - JANGAN MASUKKAN KE DOCKER IMAGE
+*-firebase-adminsdk-*.json
+firebase-service-account.json
+project-*.json
+secrets/
+
+# Development files
+.vscode
+.idea
+*.md
+api-collection/
