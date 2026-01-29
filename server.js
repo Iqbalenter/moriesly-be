@@ -37,7 +37,9 @@ const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(",")
     .map((s) => s.trim())
     .filter(Boolean)
-  : [process.env.FRONTEND_URL || "http://localhost:3000"];
+  : [process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://moriesly.com"
+  ];
 
 const io = new Server(httpServer, {
   cors: {
