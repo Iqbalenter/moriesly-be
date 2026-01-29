@@ -43,7 +43,6 @@ steps:
       - "--cpu-throttling"
       # Environment Variables Runtime ke Container
       - "--set-env-vars=NODE_ENV=${_NODE_ENV}"
-      - "--set-env-vars=PORT=${_PORT}"
       - "--set-env-vars=FRONTEND_URL=${_FRONTEND_URL}"
       - "--set-env-vars=GEMINI_API_KEY=${_GEMINI_API_KEY}"
       - "--set-env-vars=FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}"
