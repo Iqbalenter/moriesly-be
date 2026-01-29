@@ -6,7 +6,7 @@ node_modules/
 *.log
 
 # Firebase service account (JANGAN COMMIT!)
-firebase-service-account.json
+firebase-admin.json
 *-firebase-adminsdk-*.json
 project-*.json
 secrets/
