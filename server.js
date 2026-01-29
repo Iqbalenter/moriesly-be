@@ -5,6 +5,8 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
+dotenv.config();
+
 // Import routes yang terstruktur berdasarkan halaman FE
 import homeRoutes from "./routes/home.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
