@@ -47,7 +47,7 @@ steps:
       - "--set-env-vars=FRONTEND_URL=${_FRONTEND_URL}"
       - "--set-env-vars=GEMINI_API_KEY=${_GEMINI_API_KEY}"
       - "--set-env-vars=FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}"
-      - "--set-env-vars=FIREBASE_SERVICE_ACCOUNT_JSON=${_FIREBASE_SERVICE_ACCOUNT_JSON}"
+      - "--set-secrets=FIREBASE_SERVICE_ACCOUNT_JSON=FIREBASE_SERVICE_ACCOUNT_JSON:latest"
     id: "deploy-moriesly-be"
 
 # Default Substitutions
