@@ -42,7 +42,12 @@ steps:
       - "--cpu-boost"
       - "--cpu-throttling"
       # Environment Variables Runtime ke Container
-      - "--set-env-vars=NODE_ENV=${_NODE_ENV},PORT=${_PORT},FRONTEND_URL=${_FRONTEND_URL},GEMINI_API_KEY=${_GEMINI_API_KEY},FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_SERVICE_ACCOUNT_JSON=${_FIREBASE_SERVICE_ACCOUNT_JSON}"
+      - "--set-env-vars=NODE_ENV=${_NODE_ENV}"
+      - "--set-env-vars=PORT=${_PORT}"
+      - "--set-env-vars=FRONTEND_URL=${_FRONTEND_URL}"
+      - "--set-env-vars=GEMINI_API_KEY=${_GEMINI_API_KEY}"
+      - "--set-env-vars=FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}"
+      - "--set-env-vars=FIREBASE_SERVICE_ACCOUNT_JSON=${_FIREBASE_SERVICE_ACCOUNT_JSON}"
     id: "deploy-moriesly-be"
 
 # Default Substitutions
