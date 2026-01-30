@@ -120,6 +120,18 @@ router.get(
 );
 
 /**
+ * @route   GET /api/train/active-plan
+ * @desc    Get active training plan (alias dari /weekly-plan/active)
+ * @access  Private
+ * @frontend Train - View current active plan
+ */
+router.get(
+  "/active-plan",
+  verifyFirebaseToken,
+  getActiveTrainingPlanController,
+);
+
+/**
  * @route   PUT /api/train/weekly-plan/:planId/progress
  * @desc    Update weekly training plan progress
  * @access  Private

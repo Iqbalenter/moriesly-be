@@ -8,7 +8,10 @@ import {
   addHistory,
   deleteHistory,
 } from "../controllers/user.controller.js";
-import { getStatistics, getLogsByDateRange } from "../controllers/foodlog.controller.js";
+import {
+  getStatistics,
+  getLogsByDateRange,
+} from "../controllers/foodlog.controller.js";
 
 const router = express.Router();
 
@@ -34,20 +37,24 @@ router.get("/weight", verifyFirebaseToken, getWeightList);
 router.post("/weight", verifyFirebaseToken, addWeight);
 
 /**
+ * @route   GET /api/track/history/by-action
+ * @desc    Get history filtered by action type (query: action, limit)
+ * @access  Private
+ * @frontend Track - Filter history by specific action
+ */
+router.get(
+  "/history/by-action",
+  verifyFirebaseToken,
+  getHistoryByActionController,
+);
+
+/**
  * @route   GET /api/track/history
  * @desc    Get activity history (query: limit, date)
  * @access  Private
  * @frontend Track - Activity timeline/history
  */
 router.get("/history", verifyFirebaseToken, getHistoryList);
-
-/**
- * @route   GET /api/track/history/by-action
- * @desc    Get history filtered by action type (query: action, limit)
- * @access  Private
- * @frontend Track - Filter history by specific action
- */
-router.get("/history/by-action", verifyFirebaseToken, getHistoryByActionController);
 
 /**
  * @route   POST /api/track/history

@@ -35,23 +35,6 @@ const router = express.Router();
 router.get("/", verifyFirebaseToken, getUserData);
 
 /**
- * @route   POST /api/bio/skin-scan
- * @desc    Perform skin scan using AI analysis
- * @access  Private (requires canSkinScan permission)
- * @body    { image: file/base64 }
- * @frontend Bio - Scan skin with camera
- */
-router.post(
-  "/skin-scan",
-  verifyFirebaseToken,
-  requirePermission("canSkinScan"),
-  requireLimit("maxScansPerDay", getTodayScans),
-  uploadSingle,
-  convertToBase64,
-  scanSkin,
-);
-
-/**
  * @route   POST /api/bio/skin-scan/save
  * @desc    Save skin scan result to user history
  * @access  Private (requires canSkinScan permission)
@@ -92,13 +75,21 @@ router.get(
 );
 
 /**
- * @route   POST /api/bio/consultation
- * @desc    Save consultation session data
- * @access  Private
- * @body    { type: string, notes: string, recommendations: array }
- * @frontend Bio - Log consultation session
+ * @route   POST /api/bio/skin-scan
+ * @desc    Perform skin scan using AI analysis
+ * @access  Private (requires canSkinScan permission)
+ * @body    { image: file/base64 }
+ * @frontend Bio - Scan skin with camera
  */
-router.post("/consultation", verifyFirebaseToken, saveConsultationController);
+router.post(
+  "/skin-scan",
+  verifyFirebaseToken,
+  requirePermission("canSkinScan"),
+  requireLimit("maxScansPerDay", getTodayScans),
+  uploadSingle,
+  convertToBase64,
+  scanSkin,
+);
 
 /**
  * @route   GET /api/bio/consultation/history
@@ -112,5 +103,14 @@ router.get(
   requirePermission("canViewConsultationHistory"),
   getConsultationHistoryController,
 );
+
+/**
+ * @route   POST /api/bio/consultation
+ * @desc    Save consultation session data
+ * @access  Private
+ * @body    { type: string, notes: string, recommendations: array }
+ * @frontend Bio - Log consultation session
+ */
+router.post("/consultation", verifyFirebaseToken, saveConsultationController);
 
 export default router;

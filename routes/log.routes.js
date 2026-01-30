@@ -37,7 +37,11 @@ router.get("/activity", verifyFirebaseToken, getHistoryList);
  * @access  Private
  * @frontend Log - Filter logs by action type
  */
-router.get("/activity/by-action", verifyFirebaseToken, getHistoryByActionController);
+router.get(
+  "/activity/by-action",
+  verifyFirebaseToken,
+  getHistoryByActionController,
+);
 
 /**
  * @route   POST /api/log/activity
@@ -73,6 +77,14 @@ router.get("/food", verifyFirebaseToken, getLogsByDateRange);
 router.get("/food/today", verifyFirebaseToken, getTodayLogs);
 
 /**
+ * @route   GET /api/log/food/statistics
+ * @desc    Get food intake statistics
+ * @access  Private
+ * @frontend Log - Food statistics/charts
+ */
+router.get("/food/statistics", verifyFirebaseToken, getStatistics);
+
+/**
  * @route   POST /api/log/food
  * @desc    Add food log entry
  * @access  Private
@@ -90,12 +102,12 @@ router.post("/food", verifyFirebaseToken, addFoodLog);
 router.delete("/food/:logId", verifyFirebaseToken, removeLog);
 
 /**
- * @route   GET /api/log/food/statistics
- * @desc    Get food intake statistics
+ * @route   GET /api/log/ledger/range
+ * @desc    Get ledger for date range (query: startDate, endDate)
  * @access  Private
- * @frontend Log - Food statistics/charts
+ * @frontend Log - Ledger history/comparison
  */
-router.get("/food/statistics", verifyFirebaseToken, getStatistics);
+router.get("/ledger/range", verifyFirebaseToken, getLedgerRangeController);
 
 /**
  * @route   GET /api/log/ledger/:date
@@ -104,13 +116,5 @@ router.get("/food/statistics", verifyFirebaseToken, getStatistics);
  * @frontend Log - Daily ledger view
  */
 router.get("/ledger/:date", verifyFirebaseToken, getLedger);
-
-/**
- * @route   GET /api/log/ledger/range
- * @desc    Get ledger for date range (query: startDate, endDate)
- * @access  Private
- * @frontend Log - Ledger history/comparison
- */
-router.get("/ledger/range", verifyFirebaseToken, getLedgerRangeController);
 
 export default router;

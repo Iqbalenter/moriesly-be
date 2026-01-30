@@ -18,6 +18,7 @@ import bioRoutes from "./routes/bio.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import logRoutes from "./routes/log.routes.js";
 import feedRoutes from "./routes/feed.routes.js";
+import foodlogRoutes from "./routes/foodlog.routes.js";
 
 // Import routes utility (scan, auth, video call)
 import scanRoutes from "./routes/scan.routes.js";
@@ -35,12 +36,12 @@ const PORT = process.env.PORT || 8080; // Cloud Run menggunakan 8080 sebagai def
 // Support multiple CORS origins via FRONTEND_URLS (comma-separated) or single FRONTEND_URL fallback
 const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
+    .map((s) => s.trim())
+    .filter(Boolean)
   : [
-      process.env.FRONTEND_URL || "http://localhost:3000",
-      "https://moriesly.com",
-    ];
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://moriesly.com",
+  ];
 
 const io = new Server(httpServer, {
   cors: {
@@ -67,6 +68,12 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 // Health check
 app.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Moriesly Backend is running!" });
+});
+
+// Request logging middleware (untuk debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
 });
 
 // ==========================================
@@ -137,6 +144,12 @@ app.use("/api/log", logRoutes);
  */
 app.use("/api/feed", feedRoutes);
 
+/**
+ * FOODLOG API - Food logging & tracking
+ * Endpoints: add food log, get logs, statistics
+ */
+app.use("/api/foodlog", foodlogRoutes);
+
 // ==========================================
 // UTILITY ROUTES (digunakan di berbagai halaman)
 // ==========================================
@@ -163,6 +176,57 @@ app.use("/api/subscription", subscriptionRoutes);
 
 // Setup WebSocket handlers for video call
 // setupVideoCallHandlers(io);
+
+// ==========================================
+// BACKWARD COMPATIBILITY ROUTES (tanpa /api prefix)
+// ==========================================
+
+/**
+ * Routes tanpa /api prefix untuk backward compatibility
+ * Ini mem-forward request ke routes dengan /api prefix
+ */
+app.use("/home", homeRoutes);
+app.use("/profile", profileRoutes);
+app.use("/status", statusRoutes);
+app.use("/track", trackRoutes);
+app.use("/diet", dietRoutes);
+app.use("/train", trainRoutes);
+app.use("/bio", bioRoutes);
+app.use("/chat", chatRoutes);
+app.use("/log", logRoutes);
+app.use("/feed", feedRoutes);
+app.use("/foodlog", foodlogRoutes);
+app.use("/scan", scanRoutes);
+app.use("/users", userRoutes);
+app.use("/subscription", subscriptionRoutes);
+
+// 404 handler - harus sebelum error handler
+app.use((req, res, next) => {
+  console.log(`⚠️  404 - Route not found: ${req.method} ${req.path}`);
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.path} tidak ditemukan`,
+    hint: "Pastikan endpoint benar dan gunakan Authorization header untuk protected routes",
+    availableRoutes: [
+      "GET /health",
+      "POST /api/users/register",
+      "POST /api/users/login",
+      "GET /api/home/*",
+      "GET /api/profile/*",
+      "GET /api/status/*",
+      "GET /api/track/*",
+      "GET /api/diet/*",
+      "GET /api/train/*",
+      "GET /api/bio/*",
+      "GET /api/chat/*",
+      "GET /api/log/*",
+      "GET /api/feed/*",
+      "GET /api/scan/*",
+      "GET /api/users/*",
+      "GET /api/subscription/*",
+    ],
+  });
+});
 
 // Error handling middleware (harus di paling akhir)
 app.use(errorHandler);
@@ -192,5 +256,14 @@ httpServer.listen(PORT, () => {
   console.log(`   🔐 Auth:         /api/users/*`);
   console.log(`   💎 Subscription: /api/subscription/*`);
   console.log(`   📹 Video Call:   /api/videocall/*`);
+  console.log(`\n✅ Route Order Issues: FIXED`);
+  console.log(`   - Specific routes now prioritized over parameterized routes`);
+  console.log(`   - 404 handler added for better error messages`);
+  console.log(`\n🔄 BACKWARD COMPATIBILITY:`);
+  console.log(`   - Routes also available WITHOUT /api prefix`);
+  console.log(`   - Example: /users/login OR /api/users/login (both work)`);
   console.log(`${"=".repeat(60)}\n`);
+
+  // Log registered routes untuk debugging
+  console.log(`📝 Logging enabled - Monitoring all incoming requests...`);
 });
