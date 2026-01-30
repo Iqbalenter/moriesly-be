@@ -205,26 +205,7 @@ app.use((req, res, next) => {
   console.log(`⚠️  404 - Route not found: ${req.method} ${req.path}`);
   res.status(404).json({
     success: false,
-    message: `Route ${req.method} ${req.path} tidak ditemukan`,
-    hint: "Pastikan endpoint benar dan gunakan Authorization header untuk protected routes",
-    availableRoutes: [
-      "GET /health",
-      "POST /api/users/register",
-      "POST /api/users/login",
-      "GET /api/home/*",
-      "GET /api/profile/*",
-      "GET /api/status/*",
-      "GET /api/track/*",
-      "GET /api/diet/*",
-      "GET /api/train/*",
-      "GET /api/bio/*",
-      "GET /api/chat/*",
-      "GET /api/log/*",
-      "GET /api/feed/*",
-      "GET /api/scan/*",
-      "GET /api/users/*",
-      "GET /api/subscription/*",
-    ],
+    message: `Selamat Datang Dari Moriesly`,
   });
 });
 
