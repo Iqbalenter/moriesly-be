@@ -36,13 +36,14 @@ const PORT = process.env.PORT || 8080; // Cloud Run menggunakan 8080 sebagai def
 // Support multiple CORS origins via FRONTEND_URLS (comma-separated) or single FRONTEND_URL fallback
 const allowedOrigins = process.env.FRONTEND_URLS
   ? process.env.FRONTEND_URLS.split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
+      .map((s) => s.trim())
+      .filter(Boolean)
   : [
-    process.env.FRONTEND_URL || "http://localhost:3000",
-    "https://moriesly.com",
-    "https://www.moriesly.com",
-  ];
+      process.env.FRONTEND_URL,
+      "https://moriesly.com",
+      "https://www.moriesly.com",
+      "http://localhost:3000",
+    ];
 
 const io = new Server(httpServer, {
   cors: {
