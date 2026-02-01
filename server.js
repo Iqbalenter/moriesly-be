@@ -43,13 +43,38 @@ const allowedOrigins = process.env.FRONTEND_URLS
       "https://moriesly.com",
       "https://www.moriesly.com",
       "http://localhost:3000",
+      // Capacitor mobile app origins
+      "capacitor://localhost",
+      "http://localhost",
+      "https://localhost",
+      "ionic://localhost",
     ];
 
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc)
+      if (!origin) return callback(null, true);
 
+      // Allow all Capacitor schemes
+      if (
+        origin.startsWith("capacitor://") ||
+        origin.startsWith("ionic://") ||
+        origin === "http://localhost" ||
+        origin === "https://localhost"
+      ) {
+        return callback(null, true);
+      }
+
+      // Check against allowed origins list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Reject other origins
+      callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST"],
     credentials: true,
   },
 
@@ -60,7 +85,28 @@ const io = new Server(httpServer, {
 app.use(helmet());
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc)
+      if (!origin) return callback(null, true);
+
+      // Allow all Capacitor schemes
+      if (
+        origin.startsWith("capacitor://") ||
+        origin.startsWith("ionic://") ||
+        origin === "http://localhost" ||
+        origin === "https://localhost"
+      ) {
+        return callback(null, true);
+      }
+
+      // Check against allowed origins list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Reject other origins
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
