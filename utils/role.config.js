@@ -4,16 +4,48 @@
  */
 
 export const UserRole = {
-  INITIATE: "initiate",
-  OPERATIVE: "operative",
-  HANDLER: "handler",
+  // New role names
+  FREE: "free",
+  PRO: "pro",
+  PRO_MAX: "pro max",
+
+  // Backward compatibility aliases (legacy naming)
+  INITIATE: "free",
+  OPERATIVE: "pro",
+  HANDLER: "pro max",
 };
 
+export const RoleAliases = {
+  // Legacy role values
+  initiate: UserRole.FREE,
+  operative: UserRole.PRO,
+  handler: UserRole.PRO_MAX,
+
+  // New role values
+  free: UserRole.FREE,
+  pro: UserRole.PRO,
+  "pro max": UserRole.PRO_MAX,
+  "pro-max": UserRole.PRO_MAX,
+  promax: UserRole.PRO_MAX,
+  pro_max: UserRole.PRO_MAX,
+
+  // Friendly names that might appear in external systems
+  "free plan": UserRole.FREE,
+  "pro plan": UserRole.PRO,
+  "pro max plan": UserRole.PRO_MAX,
+};
+
+export function normalizeRole(role) {
+  if (!role) return UserRole.FREE;
+  const normalized = String(role).toLowerCase().trim();
+  return RoleAliases[normalized] || normalized;
+}
+
 export const RolePermissions = {
-  [UserRole.INITIATE]: {
+  [UserRole.FREE]: {
     // Scan features
     maxScansPerDay: 5,
-    scanTypes: ["food", "drink"], // Tidak bisa scan receipt, versus, label, qr, skin
+    scanTypes: ["food"],
 
     // Diet & Training
     canGenerateDietPlan: false,
@@ -22,20 +54,20 @@ export const RolePermissions = {
 
     // Consultation
     canVideoCall: false,
-    canAIChat: true,
-    maxChatMessagesPerDay: 10,
+    canAIChat: false,
+    maxChatMessagesPerDay: 0,
 
     // Bio Features
     canSkinScan: false,
     canViewConsultationHistory: false,
-    canViewSugarForecast: false, // Sugar Spike Forecasting - OPERATIVE+ only
+    canViewSugarForecast: false, // Basic sugar logging only (no forecasting)
 
     // Feed (Moriesly Feed)
     canGenerateFeed: true,
-    maxFeedGenerationsPerDay: 3, // Limited untuk user gratis
+    maxFeedGenerationsPerDay: 3,
 
     // Data & History
-    historyRetentionDays: 7, // Hanya bisa lihat 7 hari terakhir
+    historyRetentionDays: 7,
     canExportData: false,
 
     // General
@@ -44,7 +76,7 @@ export const RolePermissions = {
     adsEnabled: true,
   },
 
-  [UserRole.OPERATIVE]: {
+  [UserRole.PRO]: {
     // Scan features
     maxScansPerDay: 50,
     scanTypes: ["food", "drink", "receipt", "versus", "label", "qr", "skin"],
@@ -52,7 +84,7 @@ export const RolePermissions = {
     // Diet & Training
     canGenerateDietPlan: true,
     canGenerateTrainingPlan: true,
-    maxWeeklyPlans: 4, // 1 bulan
+    maxWeeklyPlans: 4, // 4-week diet & training plans
 
     // Consultation
     canVideoCall: true,
@@ -63,50 +95,57 @@ export const RolePermissions = {
     // Bio Features
     canSkinScan: true,
     canViewConsultationHistory: true,
-    canViewSugarForecast: true, // Sugar Spike Forecasting enabled
+    canViewSugarForecast: true, // Sugar-spike forecasting enabled
 
     // Feed (Moriesly Feed)
     canGenerateFeed: true,
-    maxFeedGenerationsPerDay: 20, // Lebih banyak untuk operative
+    maxFeedGenerationsPerDay: 20,
 
     // Data & History
-    historyRetentionDays: 365, // 1 tahun
+    historyRetentionDays: 365, // 1-year history retention
+    canExportData: false,
+
+    // General
+    canViewDetailedAnalytics: true,
+    canSetCustomGoals: false,
+    adsEnabled: false,
+  },
+
+  [UserRole.PRO_MAX]: {
+    // Scan features
+    maxScansPerDay: 100,
+    scanTypes: ["food", "drink", "receipt", "versus", "label", "qr", "skin"],
+
+    // Diet & Training
+    canGenerateDietPlan: true,
+    canGenerateTrainingPlan: true,
+    maxWeeklyPlans: 12, // 12-week diet & training plans
+
+    // Consultation
+    canVideoCall: true,
+    canAIChat: true,
+    maxChatMessagesPerDay: 500,
+    maxVideoCallMinutesPerMonth: 300,
+
+    // Bio Features
+    canSkinScan: true,
+    canViewConsultationHistory: true,
+    canViewSugarForecast: true,
+
+    // Feed (Moriesly Feed)
+    canGenerateFeed: true,
+    maxFeedGenerationsPerDay: -1, // Unlimited feed generations
+
+    // Data & History
+    historyRetentionDays: -1, // Unlimited history retention
     canExportData: true,
 
     // General
     canViewDetailedAnalytics: true,
     canSetCustomGoals: true,
     adsEnabled: false,
-  },
 
-  [UserRole.HANDLER]: {
-    // CUSTOM role adalah fully customizable per user
-    // Permissions akan disimpan di field customPermissions di profile
-    // Default: sama dengan PRO tapi bisa di-override
-    maxScansPerDay: 100,
-    scanTypes: ["food", "drink", "receipt", "versus", "label", "qr", "skin"],
-    canGenerateDietPlan: true,
-    canGenerateTrainingPlan: true,
-    maxWeeklyPlans: 12,
-    canVideoCall: true,
-    canAIChat: true,
-    maxChatMessagesPerDay: 500,
-    maxVideoCallMinutesPerMonth: 300,
-    canSkinScan: true,
-    canViewConsultationHistory: true,
-    canViewSugarForecast: true, // Sugar Spike Forecasting enabled
-
-    // Feed (Moriesly Feed)
-    canGenerateFeed: true,
-    maxFeedGenerationsPerDay: -1, // Unlimited untuk handler
-
-    historyRetentionDays: -1, // Unlimited
-    canExportData: true,
-    canViewDetailedAnalytics: true,
-    canSetCustomGoals: true,
-    adsEnabled: false,
-
-    // Custom-only features
+    // Pro Max only
     canAccessBetaFeatures: true,
     prioritySupport: true,
   },
@@ -117,12 +156,12 @@ export const RolePermissions = {
  * Jika user punya customPermissions, merge dengan default role permissions
  */
 export function getUserPermissions(userProfile) {
-  const role = userProfile?.role || UserRole.INITIATE;
+  const normalizedRole = normalizeRole(userProfile?.role || UserRole.FREE);
   const defaultPermissions =
-    RolePermissions[role] || RolePermissions[UserRole.INITIATE];
+    RolePermissions[normalizedRole] || RolePermissions[UserRole.FREE];
 
-  // Jika role HANDLER dan ada customPermissions, merge
-  if (role === UserRole.HANDLER && userProfile.customPermissions) {
+  // Jika role PRO_MAX dan ada customPermissions, merge
+  if (normalizedRole === UserRole.PRO_MAX && userProfile?.customPermissions) {
     return {
       ...defaultPermissions,
       ...userProfile.customPermissions,
@@ -147,7 +186,7 @@ export function checkLimit(userProfile, limitKey, currentUsage) {
   const permissions = getUserPermissions(userProfile);
   const limit = permissions[limitKey];
 
-  if (limit === -1) return { allowed: true, remaining: -1 }; // Unlimited
+  if (limit === -1) return { allowed: true, remaining: -1, limit: -1 }; // Unlimited
 
   const remaining = limit - currentUsage;
   return {
@@ -170,11 +209,17 @@ export function isScanTypeAllowed(userProfile, scanType) {
  * Role hierarchy untuk upgrade path
  */
 export const RoleHierarchy = {
-  [UserRole.INITIATE]: 0,
-  [UserRole.OPERATIVE]: 1,
-  [UserRole.HANDLER]: 2,
+  [UserRole.FREE]: 0,
+  [UserRole.PRO]: 1,
+  [UserRole.PRO_MAX]: 2,
 };
 
 export function canUpgradeTo(currentRole, targetRole) {
-  return RoleHierarchy[targetRole] > RoleHierarchy[currentRole];
+  const current = normalizeRole(currentRole);
+  const target = normalizeRole(targetRole);
+
+  const currentRank = RoleHierarchy[current] ?? -1;
+  const targetRank = RoleHierarchy[target] ?? -1;
+
+  return targetRank > currentRank;
 }

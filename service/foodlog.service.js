@@ -176,3 +176,28 @@ export async function getFoodLogStatistics(userId) {
     throw error;
   }
 }
+
+export async function getFoodLogsByTimeRange(userId, hours = 24) {
+  try {
+    const logsRef = db.collection("users").doc(userId).collection("foodLogs");
+    const now = new Date();
+    const start = new Date(now.getTime() - hours * 60 * 60 * 1000);
+
+    const snapshot = await logsRef
+      .where("timestamp", ">=", start.toISOString())
+      .orderBy("timestamp", "desc")
+      .get();
+
+    if (snapshot.empty) {
+      return [];
+    }
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error getting food logs by time range:", error);
+    throw error;
+  }
+}

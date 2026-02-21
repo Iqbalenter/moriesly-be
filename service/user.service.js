@@ -1,4 +1,5 @@
 import { db } from "../config/firebase.config.js";
+import { UserRole } from "../utils/role.config.js";
 
 /**
  * Membuat profil user baru di Firestore
@@ -151,7 +152,7 @@ export async function initializeUserProfile(userId, userData) {
       rankTitle: "Rookie Agent",
       medicalConditions: [],
       // Default subscription settings
-      role: "initiate",
+      role: UserRole.FREE,
       roleUpdatedAt: new Date().toISOString(),
       subscriptionExpiry: null,
       paymentHistory: [],

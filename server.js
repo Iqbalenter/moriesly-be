@@ -19,11 +19,13 @@ import chatRoutes from "./routes/chat.routes.js";
 import logRoutes from "./routes/log.routes.js";
 import feedRoutes from "./routes/feed.routes.js";
 import foodlogRoutes from "./routes/foodlog.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 // Import routes utility (scan, auth, video call)
 import scanRoutes from "./routes/scan.routes.js";
 import userRoutes from "./routes/user.routes.js"; // Auth endpoints (register, login, verify)
 import subscriptionRoutes from "./routes/subscription.routes.js"; // Subscription & role management
+import waitlistRoutes from "./routes/waitlist.routes.js"; // Waitlist management
 // import videocallRoutes from "./routes/videocall.routes.js";
 
 // import { setupVideoCallHandlers } from "./controllers/videocall.controller.js";
@@ -43,6 +45,7 @@ const allowedOrigins = process.env.FRONTEND_URLS
       "https://moriesly.com",
       "https://www.moriesly.com",
       "http://localhost:3000",
+      "http://localhost:3001",
       // Capacitor mobile app origins
       "capacitor://localhost",
       "http://localhost",
@@ -198,6 +201,12 @@ app.use("/api/feed", feedRoutes);
  */
 app.use("/api/foodlog", foodlogRoutes);
 
+/**
+ * DASHBOARD API - Web dashboard analytics
+ * Endpoints: metabolic overview
+ */
+app.use("/api/dashboard", dashboardRoutes);
+
 // ==========================================
 // UTILITY ROUTES (digunakan di berbagai halaman)
 // ==========================================
@@ -222,6 +231,12 @@ app.use("/api/users", userRoutes);
  */
 app.use("/api/subscription", subscriptionRoutes);
 
+/**
+ * WAITLIST API - Pendaftaran waitlist early access
+ * Endpoints: tambah waitlist, get waitlist, verifikasi email
+ */
+app.use("/api/waitlist", waitlistRoutes);
+
 // Setup WebSocket handlers for video call
 // setupVideoCallHandlers(io);
 
@@ -244,9 +259,11 @@ app.use("/chat", chatRoutes);
 app.use("/log", logRoutes);
 app.use("/feed", feedRoutes);
 app.use("/foodlog", foodlogRoutes);
+app.use("/dashboard", dashboardRoutes);
 app.use("/scan", scanRoutes);
 app.use("/users", userRoutes);
 app.use("/subscription", subscriptionRoutes);
+app.use("/waitlist", waitlistRoutes);
 
 // 404 handler - harus sebelum error handler
 app.use((req, res, next) => {
@@ -284,6 +301,7 @@ httpServer.listen(PORT, () => {
   console.log(`   📸 Scan:         /api/scan/*`);
   console.log(`   🔐 Auth:         /api/users/*`);
   console.log(`   💎 Subscription: /api/subscription/*`);
+  console.log(`   📋 Waitlist:      /api/waitlist/*`);
   console.log(`   📹 Video Call:   /api/videocall/*`);
   console.log(`\n✅ Route Order Issues: FIXED`);
   console.log(`   - Specific routes now prioritized over parameterized routes`);

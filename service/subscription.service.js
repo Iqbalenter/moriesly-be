@@ -1,6 +1,6 @@
 import { db } from "../config/firebase.config.js";
 import admin from "../config/firebase.config.js";
-import { UserRole, canUpgradeTo } from "../utils/role.config.js";
+import { UserRole, canUpgradeTo, normalizeRole } from "../utils/role.config.js";
 
 /**
  * Update user role/subscription
@@ -12,13 +12,14 @@ export async function updateUserRole(
 ) {
   try {
     const userRef = db.collection("users").doc(userId);
+    const normalizedRole = normalizeRole(newRole);
     const updateData = {
-      role: newRole,
+      role: normalizedRole,
       roleUpdatedAt: new Date().toISOString(),
     };
 
     // Jika handler role dan ada customPermissions
-    if (newRole === UserRole.HANDLER && customPermissions) {
+    if (normalizedRole === UserRole.HANDLER && customPermissions) {
       updateData.customPermissions = customPermissions;
     }
 
@@ -48,7 +49,7 @@ export async function getSubscriptionInfo(userId) {
     const userData = userDoc.data();
 
     return {
-      role: userData.role || UserRole.INITIATE,
+      role: normalizeRole(userData.role || UserRole.FREE),
       roleUpdatedAt: userData.roleUpdatedAt || null,
       customPermissions: userData.customPermissions || null,
       subscriptionExpiry: userData.subscriptionExpiry || null,
@@ -143,11 +144,12 @@ export async function processUpgrade(userId, targetRole, paymentData) {
       throw new Error("User not found");
     }
 
-    const currentRole = userDoc.data().role || UserRole.INITIATE;
+    const currentRole = normalizeRole(userDoc.data().role || UserRole.FREE);
 
     // Check if upgrade is valid
-    if (!canUpgradeTo(currentRole, targetRole)) {
-      throw new Error(`Cannot upgrade from ${currentRole} to ${targetRole}`);
+    const normalizedTargetRole = normalizeRole(targetRole);
+    if (!canUpgradeTo(currentRole, normalizedTargetRole)) {
+      throw new Error(`Cannot upgrade from ${currentRole} to ${normalizedTargetRole}`);
     }
 
     // Simulate payment processing
@@ -158,13 +160,13 @@ export async function processUpgrade(userId, targetRole, paymentData) {
     expiry.setMonth(expiry.getMonth() + 1); // 1 bulan subscription
 
     await userRef.update({
-      role: targetRole,
+      role: normalizedTargetRole,
       roleUpdatedAt: new Date().toISOString(),
       subscriptionExpiry: expiry.toISOString(),
       paymentHistory: admin.firestore.FieldValue.arrayUnion({
         date: new Date().toISOString(),
         fromRole: currentRole,
-        toRole: targetRole,
+        toRole: normalizedTargetRole,
         amount: paymentData.amount,
         method: paymentData.method,
         transactionId: paymentData.transactionId || "SIMULATED_" + Date.now(),
@@ -173,7 +175,7 @@ export async function processUpgrade(userId, targetRole, paymentData) {
 
     return {
       success: true,
-      newRole: targetRole,
+      newRole: normalizedTargetRole,
       expiryDate: expiry.toISOString(),
     };
   } catch (error) {
@@ -195,11 +197,11 @@ export async function checkSubscriptionExpiry(userId) {
     }
 
     const userData = userDoc.data();
-    const role = userData.role || UserRole.INITIATE;
+    const role = normalizeRole(userData.role || UserRole.FREE);
     const expiry = userData.subscriptionExpiry;
 
-    // INITIATE users tidak punya expiry
-    if (role === UserRole.INITIATE) {
+    // FREE users tidak punya expiry
+    if (role === UserRole.FREE) {
       return { expired: false, role };
     }
 
@@ -209,9 +211,9 @@ export async function checkSubscriptionExpiry(userId) {
       const now = new Date();
 
       if (now > expiryDate) {
-        // Downgrade to INITIATE
+        // Downgrade to FREE
         await userRef.update({
-          role: UserRole.INITIATE,
+          role: UserRole.FREE,
           roleUpdatedAt: new Date().toISOString(),
           previousRole: role,
         });
@@ -219,7 +221,7 @@ export async function checkSubscriptionExpiry(userId) {
         return {
           expired: true,
           previousRole: role,
-          newRole: UserRole.INITIATE,
+          newRole: UserRole.FREE,
         };
       }
     }
@@ -244,32 +246,41 @@ export async function getSubscriptionStatus(userId) {
     }
 
     const userData = userDoc.data();
-    const role = userData.role || UserRole.INITIATE;
+    const role = normalizeRole(userData.role || UserRole.FREE);
     const subscription = userData.subscription || {};
 
     // Feature details untuk setiap tier
     const featureDetails = {
-      operative: {
-        scans: "50 scans/day (all types)",
-        chat: "100 AI chat messages/day",
-        feed: "20 feed generations/day",
-        diet: "Diet & training plans (4 weeks)",
-        skin: "Skin scan",
-        sugar: "Sugar forecast",
+      [UserRole.PRO]: {
+        scans: "50 scans per day (all types)",
+        chat: "100 AI chat messages per day",
+        video: "60 minutes video calls per month",
+        diet: "4-week diet and training plans",
+        sugar: "Sugar-spike forecasting",
+        analytics: "Detailed analytics",
+        history: "1-year history retention",
+        ads: "Ad-free experience",
       },
-      handler: {
-        scans: "100 scans/day",
-        chat: "500 AI chat messages/day",
+      [UserRole.PRO_MAX]: {
+        scans: "100 scans per day (all types)",
+        chat: "500 AI chat messages per day",
+        video: "300 minutes video calls per month",
         feed: "Unlimited feed generations",
-        diet: "Diet & training plans (12 weeks)",
-        beta: "All features + beta access",
-        custom: "Custom permissions per user",
+        diet: "12-week diet and training plans",
+        sugar: "Sugar-spike forecasting",
+        analytics: "Advanced analytics",
+        goals: "Custom goal setting",
+        beta: "Access to beta features",
+        support: "Priority support",
+        history: "Unlimited history retention",
+        export: "Data export capability",
+        ads: "Ad-free experience",
       },
     };
 
     // Tentukan status berdasarkan role
     let status = "active";
-    if (role === UserRole.INITIATE) {
+    if (role === UserRole.FREE) {
       status = "none";
     } else if (subscription.status) {
       status = subscription.status;
@@ -287,7 +298,7 @@ export async function getSubscriptionStatus(userId) {
       if (!dateValue) return null;
 
       // If it's a Firestore Timestamp object
-      if (dateValue && typeof dateValue.toDate === 'function') {
+      if (dateValue && typeof dateValue.toDate === "function") {
         return dateValue.toDate().toISOString();
       }
 
@@ -297,7 +308,7 @@ export async function getSubscriptionStatus(userId) {
       }
 
       // If it's a string, try to parse it
-      if (typeof dateValue === 'string') {
+      if (typeof dateValue === "string") {
         return dateValue;
       }
 
@@ -305,18 +316,20 @@ export async function getSubscriptionStatus(userId) {
     };
 
     // Jika ada subscription aktif
-    if (role !== UserRole.INITIATE && subscription.plan) {
+    if (role !== UserRole.FREE && subscription.plan) {
       response.subscription = {
         plan: subscription.plan,
         currentPeriodStart: toISOString(subscription.currentPeriodStart),
-        currentPeriodEnd: toISOString(subscription.currentPeriodEnd || userData.subscriptionExpiry),
+        currentPeriodEnd: toISOString(
+          subscription.currentPeriodEnd || userData.subscriptionExpiry,
+        ),
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || false,
         endsAt: toISOString(subscription.endsAt),
       };
     }
 
     // Tambahkan feature details
-    if (role === UserRole.OPERATIVE || role === UserRole.HANDLER) {
+    if (role === UserRole.PRO || role === UserRole.PRO_MAX) {
       response.features = featureDetails[role];
     }
 

@@ -57,7 +57,7 @@ export function setupVideoCallHandlers(io) {
         if (!permissions.canVideoCall) {
           socket.emit("video-call:error", {
             success: false,
-            error: "Video call requires OPERATIVE or HANDLER subscription",
+            error: "Video call requires Pro Plan or Pro Max Plan subscription",
             code: "PERMISSION_DENIED",
             currentRole: userProfile.role,
             upgradeRequired: true,

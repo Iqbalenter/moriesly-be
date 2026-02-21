@@ -10,6 +10,7 @@ import {
   getUserPermissions,
   RolePermissions,
   UserRole,
+  normalizeRole,
 } from "../utils/role.config.js";
 import { getUserProfile } from "../service/user.service.js";
 
@@ -107,6 +108,7 @@ export async function upgradeSubscriptionController(req, res) {
   try {
     const userId = req.user.uid;
     const { targetRole, paymentData } = req.body;
+    const normalizedTargetRole = normalizeRole(targetRole);
 
     if (!targetRole) {
       return res.status(400).json({
@@ -116,18 +118,18 @@ export async function upgradeSubscriptionController(req, res) {
     }
 
     // Validate target role
-    if (!Object.values(UserRole).includes(targetRole)) {
+    if (!Object.values(UserRole).includes(normalizedTargetRole)) {
       return res.status(400).json({
         success: false,
         message: "Invalid target role",
       });
     }
 
-    const result = await processUpgrade(userId, targetRole, paymentData || {});
+    const result = await processUpgrade(userId, normalizedTargetRole, paymentData || {});
 
     return res.json({
       success: true,
-      message: `Successfully upgraded to ${targetRole}`,
+      message: `Successfully upgraded to ${normalizedTargetRole}`,
       data: result,
     });
   } catch (error) {
@@ -146,12 +148,12 @@ export async function getAvailablePlansController(req, res) {
   try {
     const userId = req.user.uid;
     const userProfile = await getUserProfile(userId);
-    const currentRole = userProfile?.role || UserRole.INITIATE;
+    const currentRole = normalizeRole(userProfile?.role || UserRole.FREE);
 
     const plans = [
       {
-        role: UserRole.INITIATE,
-        name: "Initiate Plan",
+        role: UserRole.FREE,
+        name: "Free Plan",
         price: 0,
         currency: "IDR",
         features: [
@@ -159,7 +161,6 @@ export async function getAvailablePlansController(req, res) {
           "Basic Sugar Logging",
           "Standard Processing Speed",
           "7-Day History Retention",
-          "10 AI chat messages/day",
         ],
         limitations: [
           "No diet plan generation",
@@ -169,54 +170,55 @@ export async function getAvailablePlansController(req, res) {
           "No receipt/label/versus scan",
           "Ads enabled",
         ],
-        isCurrent: currentRole === UserRole.INITIATE,
+        isCurrent: currentRole === UserRole.FREE,
         canUpgrade: false,
       },
       {
-        role: UserRole.OPERATIVE,
-        name: "Operative Plan",
+        role: UserRole.PRO,
+        name: "Pro Plan",
         price: 49000,
         currency: "IDR",
         period: "month",
         features: [
-          "50 AI Scans Daily",
-          "AI Agent (Chat & Video Call)",
-          "Receipt Audit System",
-          "Label Decoder (Hidden Additives)",
-          "Sugar Spike Forecasting",
-          "Versus Comparison",
-          "AI Diet & Training Plans",
-          "100 chat messages/day",
-          "60 min video call/month",
-          "1 year history retention",
-          "Export data",
-          "No ads",
+          "50 scans per day",
+          "Access to all scan types: food, drink, receipt, versus, label, QR, and skin",
+          "100 AI chat messages per day",
+          "60 minutes of video calls per month",
+          "4-week diet and training plans",
+          "Sugar-spike forecasting",
+          "Detailed analytics",
+          "Ad-free experience",
+          "1-year history retention",
         ],
         limitations: [],
-        isCurrent: currentRole === UserRole.OPERATIVE,
-        canUpgrade: currentRole === UserRole.INITIATE,
+        isCurrent: currentRole === UserRole.PRO,
+        canUpgrade: currentRole === UserRole.FREE,
         recommended: true,
       },
       {
-        role: UserRole.HANDLER,
-        name: "Handler Plan",
+        role: UserRole.PRO_MAX,
+        name: "Pro Max Plan",
         price: null, // Contact for pricing
         currency: "IDR",
         features: [
-          "100+ AI Scans Daily",
-          "AI Agent (Video & Chat)",
-          "Bio-Age Face Analysis",
-          "All Operative Features",
-          "500 chat messages/day",
-          "300 min video/month",
-          "Beta features access",
+          "100 scans per day",
+          "Access to all scan types",
+          "500 AI chat messages per day",
+          "300 minutes of video calls per month",
+          "Unlimited feed generations",
+          "12-week diet and training plans",
+          "Sugar-spike forecasting",
+          "Advanced analytics",
+          "Custom goal setting",
+          "Access to beta features",
           "Priority support",
-          "Unlimited history",
-          "Custom permissions",
+          "Unlimited history retention",
+          "Data export capability",
+          "Ad-free experience",
         ],
         limitations: [],
-        isCurrent: currentRole === UserRole.HANDLER,
-        canUpgrade: currentRole !== UserRole.HANDLER,
+        isCurrent: currentRole === UserRole.PRO_MAX,
+        canUpgrade: currentRole !== UserRole.PRO_MAX,
         contactRequired: true,
       },
     ];
