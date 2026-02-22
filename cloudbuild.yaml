@@ -20,8 +20,8 @@
 # CATATAN:
 #   - FIREBASE_API_KEY dan FIREBASE_WEB_API_KEY adalah key yang sama (Firebase Web API Key)
 #     Cukup isi _FIREBASE_WEB_API_KEY saja di trigger, keduanya akan di-set otomatis
-#   - FIREBASE_SERVICE_ACCOUNT_PATH di-set ke /app/firebase-admin.json agar sesuai
-#     dengan path mount Secret Manager di Cloud Run
+#   - FIREBASE_SERVICE_ACCOUNT_PATH di-set ke /secrets/firebase-admin.json
+#     agar tidak menimpa /app (source code di container)
 # ============================================================
 
 steps:
@@ -54,7 +54,7 @@ steps:
   # 3. Deploy Cloud Run
   # firebase-admin.json di-mount via Secret Manager sebagai file
   # sehingga tidak perlu di-bake ke dalam Docker image
-  # Path mount sesuai yang dibaca firebase.config.js: /app/firebase-admin.json
+  # Path mount secret dipindah ke /secrets agar /app tidak tertimpa
   # ==========================================================
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "deploy-moriesly-be"
@@ -75,8 +75,8 @@ steps:
       - "--timeout=300"
       - "--cpu-boost"
       - "--cpu-throttling"
-      - "--set-env-vars=^|^NODE_ENV=${_NODE_ENV}|GEMINI_API_KEY=${_GEMINI_API_KEY}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_SERVICE_ACCOUNT_PATH=/app/firebase-admin.json|FRONTEND_URLS=${_FRONTEND_URLS}"
-      - "--update-secrets=/app/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
+      - "--set-env-vars=^|^NODE_ENV=${_NODE_ENV}|GEMINI_API_KEY=${_GEMINI_API_KEY}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_SERVICE_ACCOUNT_PATH=/secrets/firebase-admin.json|FRONTEND_URLS=${_FRONTEND_URLS}"
+      - "--update-secrets=/secrets/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
 
 # Default Substitutions
 substitutions:
