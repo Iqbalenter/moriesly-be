@@ -30,7 +30,6 @@ steps:
   # ==========================================================
   - name: "gcr.io/cloud-builders/docker"
     id: "build-moriesly-be"
-    dir: "moriesly-be"
     args:
       - "build"
       - "-t"
@@ -46,7 +45,6 @@ steps:
   # ==========================================================
   - name: "gcr.io/cloud-builders/docker"
     id: "push-moriesly-be"
-    dir: "moriesly-be"
     args:
       - "push"
       - "--all-tags"
