@@ -4,19 +4,19 @@ import "./env.config.js";
 import admin from "firebase-admin";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 let serviceAccount;
 
-// Path langsung ke file firebase-admin.json di folder secrets/
-const serviceAccountPath = join(
-  __dirname,
-  "..",
-  "firebase-admin.json",
-);
+// Gunakan FIREBASE_SERVICE_ACCOUNT_PATH dari env jika ada,
+// resolve() handles absolute path (/app/...) maupun relative path (secrets/...)
+// Fallback ke firebase-admin.json di root project
+const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+  ? resolve(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+  : join(__dirname, "..", "firebase-admin.json");
 
 try {
   // Baca file service account JSON

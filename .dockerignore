@@ -13,6 +13,8 @@ package-lock.json
 .env.test
 
 # Firebase service account - SANGAT SENSITIF!
+# firebase-admin.json sekarang di-mount via Secret Manager di Cloud Run
+firebase-admin.json
 *-firebase-adminsdk-*.json
 firebase-service-account.json
 project-*.json
@@ -67,6 +69,7 @@ postman/
 insomnia/
 
 # CI/CD
+cloudbuild.yaml
 .github/
 .gitlab-ci.yml
 .travis.yml

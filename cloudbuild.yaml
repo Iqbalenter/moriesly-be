@@ -1,0 +1,87 @@
+# ============================================================
+# Cloud Build - moriesly-be
+# Build & Push via Kaniko, Deploy ke Cloud Run
+# ============================================================
+# Substitution variables diisi di Cloud Build Trigger:
+#   _REGION               : GCP region (e.g. asia-southeast2)
+#   _ARTIFACT_REGISTRY_REPO: Nama Artifact Registry repo (e.g. moriesly)
+#   _SERVICE_NAME         : Nama Cloud Run service (e.g. moriesly-be)
+#   _MEMORY               : Memory Cloud Run (e.g. 512Mi)
+#   _CPU                  : CPU Cloud Run (e.g. 1)
+#   _MIN_INSTANCES        : Min instances Cloud Run (e.g. 0)
+#   _MAX_INSTANCES        : Max instances Cloud Run (e.g. 3)
+#   _PORT                 : Port aplikasi (e.g. 8080)
+#   _NODE_ENV             : Node environment (e.g. production)
+#   _GEMINI_API_KEY       : Gemini API key
+#   _FIREBASE_WEB_API_KEY : Firebase Web API key (Project Settings > General)
+#   _FIREBASE_API_KEY     : Firebase API key (biasanya sama dengan WEB_API_KEY)
+#   _FRONTEND_URLS        : CORS origins dipisah koma (e.g. https://moriesly.com,https://www.moriesly.com)
+#   _FIREBASE_SECRET_NAME : Nama secret di Secret Manager (e.g. FIREBASE_SERVICE_ACCOUNT)
+#
+# CATATAN:
+#   - FIREBASE_API_KEY dan FIREBASE_WEB_API_KEY adalah key yang sama (Firebase Web API Key)
+#     Cukup isi _FIREBASE_WEB_API_KEY saja di trigger, keduanya akan di-set otomatis
+#   - FIREBASE_SERVICE_ACCOUNT_PATH di-set ke /app/firebase-admin.json agar sesuai
+#     dengan path mount Secret Manager di Cloud Run
+# ============================================================
+
+steps:
+  # ==========================================================
+  # 1. Build & Push Image (Kaniko)
+  # ==========================================================
+  - name: "gcr.io/kaniko-project/executor:latest"
+    id: "build-push-moriesly-be"
+    args:
+      - --destination=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:${SHORT_SHA}
+      - --destination=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:latest
+      - --cache=true
+      - --cache-ttl=24h
+      - --context=dir:///workspace
+      - --dockerfile=moriesly-be/Dockerfile
+
+  # ==========================================================
+  # 2. Deploy Cloud Run
+  # firebase-admin.json di-mount via Secret Manager sebagai file
+  # sehingga tidak perlu di-bake ke dalam Docker image
+  # Path mount sesuai yang dibaca firebase.config.js: /app/firebase-admin.json
+  # ==========================================================
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "deploy-moriesly-be"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "${_SERVICE_NAME}"
+      - "--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:${SHORT_SHA}"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--memory=${_MEMORY}"
+      - "--cpu=${_CPU}"
+      - "--min-instances=${_MIN_INSTANCES}"
+      - "--max-instances=${_MAX_INSTANCES}"
+      - "--port=${_PORT}"
+      - "--timeout=300"
+      - "--cpu-boost"
+      - "--cpu-throttling"
+      - "--set-env-vars=NODE_ENV=${_NODE_ENV},GEMINI_API_KEY=${_GEMINI_API_KEY},FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_SERVICE_ACCOUNT_PATH=/app/firebase-admin.json,FRONTEND_URLS=${_FRONTEND_URLS}"
+      - "--update-secrets=/app/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
+
+substitutions:
+  _REGION: "asia-southeast2"
+  _ARTIFACT_REGISTRY_REPO: "moriesly"
+  _SERVICE_NAME: "moriesly-be"
+  _MEMORY: "512Mi"
+  _CPU: "1"
+  _MIN_INSTANCES: "0"
+  _MAX_INSTANCES: "3"
+  _PORT: "8080"
+  _NODE_ENV: "production"
+  _GEMINI_API_KEY: ""
+  _FIREBASE_WEB_API_KEY: ""
+  _FRONTEND_URLS: ""
+  _FIREBASE_SECRET_NAME: "FIREBASE_SERVICE_ACCOUNT"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: "E2_MEDIUM"
