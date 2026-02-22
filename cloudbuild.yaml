@@ -1,6 +1,6 @@
 # ============================================================
 # Cloud Build - moriesly-be
-# Build & Push via Kaniko, Deploy ke Cloud Run
+# Build & Push via Docker, Deploy ke Cloud Run
 # ============================================================
 # Substitution variables diisi di Cloud Build Trigger:
 #   _REGION               : GCP region (e.g. asia-southeast2)
@@ -14,7 +14,6 @@
 #   _NODE_ENV             : Node environment (e.g. production)
 #   _GEMINI_API_KEY       : Gemini API key
 #   _FIREBASE_WEB_API_KEY : Firebase Web API key (Project Settings > General)
-#   _FIREBASE_API_KEY     : Firebase API key (biasanya sama dengan WEB_API_KEY)
 #   _FRONTEND_URLS        : CORS origins dipisah koma (e.g. https://moriesly.com,https://www.moriesly.com)
 #   _FIREBASE_SECRET_NAME : Nama secret di Secret Manager (e.g. FIREBASE_SERVICE_ACCOUNT)
 #
@@ -27,20 +26,32 @@
 
 steps:
   # ==========================================================
-  # 1. Build & Push Image (Kaniko)
+  # 1. Build Image
   # ==========================================================
-  - name: "gcr.io/kaniko-project/executor:latest"
-    id: "build-push-moriesly-be"
+  - name: "gcr.io/cloud-builders/docker"
+    id: "build-moriesly-be"
     args:
-      - --destination=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:${SHORT_SHA}
-      - --destination=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:latest
-      - --cache=true
-      - --cache-ttl=24h
-      - --context=dir:///workspace
-      - --dockerfile=moriesly-be/Dockerfile
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:latest"
+      - "-f"
+      - "moriesly-be/Dockerfile"
+      - "./moriesly-be"
 
   # ==========================================================
-  # 2. Deploy Cloud Run
+  # 2. Push Image
+  # ==========================================================
+  - name: "gcr.io/cloud-builders/docker"
+    id: "push-moriesly-be"
+    args:
+      - "push"
+      - "--all-tags"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}"
+
+  # ==========================================================
+  # 3. Deploy Cloud Run
   # firebase-admin.json di-mount via Secret Manager sebagai file
   # sehingga tidak perlu di-bake ke dalam Docker image
   # Path mount sesuai yang dibaca firebase.config.js: /app/firebase-admin.json
@@ -67,6 +78,7 @@ steps:
       - "--set-env-vars=NODE_ENV=${_NODE_ENV},GEMINI_API_KEY=${_GEMINI_API_KEY},FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_SERVICE_ACCOUNT_PATH=/app/firebase-admin.json,FRONTEND_URLS=${_FRONTEND_URLS}"
       - "--update-secrets=/app/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
 
+# Default Substitutions
 substitutions:
   _REGION: "asia-southeast2"
   _ARTIFACT_REGISTRY_REPO: "moriesly"
@@ -85,3 +97,7 @@ substitutions:
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: "E2_MEDIUM"
+
+images:
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:latest"
