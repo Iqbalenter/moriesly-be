@@ -37,8 +37,8 @@ steps:
       - "-t"
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/${_SERVICE_NAME}:latest"
       - "-f"
-      - "moriesly-be/Dockerfile"
-      - "./moriesly-be"
+      - "Dockerfile"
+      - "."
 
   # ==========================================================
   # 2. Push Image
@@ -80,9 +80,9 @@ steps:
 
 # Default Substitutions
 substitutions:
-  _REGION: "asia-southeast2"
-  _ARTIFACT_REGISTRY_REPO: "moriesly"
-  _SERVICE_NAME: "moriesly-be"
+  _REGION: "us-central1"
+  _ARTIFACT_REGISTRY_REPO: "prod-api"
+  _SERVICE_NAME: "main-api"
   _MEMORY: "512Mi"
   _CPU: "1"
   _MIN_INSTANCES: "0"
