@@ -75,7 +75,7 @@ steps:
       - "--timeout=300"
       - "--cpu-boost"
       - "--cpu-throttling"
-      - "--set-env-vars=NODE_ENV=${_NODE_ENV},GEMINI_API_KEY=${_GEMINI_API_KEY},FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY},FIREBASE_SERVICE_ACCOUNT_PATH=/app/firebase-admin.json,FRONTEND_URLS=${_FRONTEND_URLS}"
+      - "--set-env-vars=^|^NODE_ENV=${_NODE_ENV}|GEMINI_API_KEY=${_GEMINI_API_KEY}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_SERVICE_ACCOUNT_PATH=/app/firebase-admin.json|FRONTEND_URLS=${_FRONTEND_URLS}"
       - "--update-secrets=/app/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
 
 # Default Substitutions
