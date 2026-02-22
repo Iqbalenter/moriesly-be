@@ -75,6 +75,8 @@ steps:
       - "--timeout=300"
       - "--cpu-boost"
       - "--cpu-throttling"
+      # Hapus mount secret lama di /app agar tidak menimpa source code container
+      - "--remove-secrets=/app/firebase-admin.json"
       - "--set-env-vars=^|^NODE_ENV=${_NODE_ENV}|GEMINI_API_KEY=${_GEMINI_API_KEY}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_SERVICE_ACCOUNT_PATH=/secrets/firebase-admin.json|FRONTEND_URLS=${_FRONTEND_URLS}"
       - "--update-secrets=/secrets/firebase-admin.json=${_FIREBASE_SECRET_NAME}:latest"
 
