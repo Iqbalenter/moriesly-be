@@ -17,15 +17,29 @@ export async function verifyFirebaseToken(req, res, next) {
       });
     }
 
-    // Extract token
-    const idToken = authHeader.split("Bearer ")[1];
+    // Extract token — .trim() untuk antisipasi whitespace/newline tidak terduga
+    const idToken = authHeader.split("Bearer ")[1]?.trim();
 
     if (!idToken) {
+      console.warn(
+        "[auth.middleware] Token kosong setelah di-extract dari header.",
+      );
       return res.status(401).json({
         success: false,
         alert: "Token tidak valid",
       });
     }
+
+    // DEBUG: log 60 karakter pertama token agar bisa dicek formatnya
+    console.log(
+      "[auth.middleware] Token received (first 60 chars):",
+      idToken.substring(0, 60),
+    );
+    console.log("[auth.middleware] Token length:", idToken.length);
+    console.log(
+      "[auth.middleware] Starts with 'eyJ':",
+      idToken.startsWith("eyJ"),
+    );
 
     // Verifikasi token dengan Firebase Admin
     const decodedToken = await auth.verifyIdToken(idToken);
@@ -48,7 +62,10 @@ export async function verifyFirebaseToken(req, res, next) {
     // Lanjutkan ke handler berikutnya
     next();
   } catch (error) {
-    console.error("Error verifying token:", error);
+    // Log error lengkap untuk debugging
+    console.error("[auth.middleware] verifyIdToken FAILED:");
+    console.error("  → error.code   :", error.code);
+    console.error("  → error.message:", error.message);
 
     if (error.code === "auth/id-token-expired") {
       return res.status(401).json({
