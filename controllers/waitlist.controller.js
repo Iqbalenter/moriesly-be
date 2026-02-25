@@ -1,5 +1,6 @@
 import { db } from "../config/firebase.config.js";
 import admin from "../config/firebase.config.js";
+import { sendWaitlistTicketEmail } from "../service/email.service.js";
 
 /**
  * Generate ticket ID unik untuk waitlist
@@ -9,11 +10,11 @@ const generateTicketId = () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const part1 = Array.from(
     { length: 4 },
-    () => chars[Math.floor(Math.random() * chars.length)]
+    () => chars[Math.floor(Math.random() * chars.length)],
   ).join("");
   const part2 = Array.from(
     { length: 2 },
-    () => chars[Math.floor(Math.random() * chars.length)]
+    () => chars[Math.floor(Math.random() * chars.length)],
   ).join("");
   return `${part1}-${part2}`;
 };
@@ -31,7 +32,7 @@ export async function addToWaitlist(req, res) {
     if (!email || !phone || !reason || !deviceType) {
       return res.status(400).json({
         success: false,
-        message: "Semua field wajib diisi (email, phone, reason, deviceType)",
+        message: "All fields are required (email, phone, reason)",
       });
     }
 
@@ -40,7 +41,7 @@ export async function addToWaitlist(req, res) {
     if (!emailRegex.test(email)) {
       return res.status(400).json({
         success: false,
-        message: "Format email tidak valid",
+        message: "Invalid email format",
       });
     }
 
@@ -49,7 +50,7 @@ export async function addToWaitlist(req, res) {
     if (!validDeviceTypes.includes(deviceType)) {
       return res.status(400).json({
         success: false,
-        message: "deviceType harus berupa 'watch' atau 'bracelet'",
+        message: "deviceType must be ‘watch’ or 'bracelet'",
       });
     }
 
@@ -63,7 +64,7 @@ export async function addToWaitlist(req, res) {
     if (!existingQuery.empty) {
       return res.status(409).json({
         success: false,
-        message: "Email ini sudah terdaftar di waitlist kami",
+        message: "This email is already on our waitlist.",
       });
     }
 
@@ -89,11 +90,31 @@ export async function addToWaitlist(req, res) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log(`✅ Waitlist entry created: ${docRef.id} | email: ${cleanEmail} | ticket: ${ticketId}`);
+    console.log(
+      `✅ Waitlist entry created: ${docRef.id} | email: ${cleanEmail} | ticket: ${ticketId}`,
+    );
+
+    // Kirim email tiket ke user — dijalankan async, tidak memblokir response
+    sendWaitlistTicketEmail({
+      toEmail: cleanEmail,
+      ticketId,
+      reason: reason.trim(),
+    }).then((emailResult) => {
+      if (emailResult.success) {
+        console.log(
+          `📧 Ticket email sent to ${cleanEmail} | messageId: ${emailResult.messageId}`,
+        );
+      } else {
+        console.warn(
+          `⚠️  Ticket email failed for ${cleanEmail}: ${emailResult.error}`,
+        );
+      }
+    });
 
     return res.status(201).json({
       success: true,
-      message: "Berhasil mendaftar waitlist! Kami akan menghubungi Anda segera.",
+      message:
+        "You have successfully registered for the waitlist! Check your email for a confirmation ticket.",
       data: {
         id: docRef.id,
         ticketId,
@@ -104,7 +125,7 @@ export async function addToWaitlist(req, res) {
     console.error("❌ Error adding to waitlist:", error);
     return res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan pada server. Silakan coba lagi.",
+      message: "An error occurred on the server. Please try again.",
     });
   }
 }
@@ -162,7 +183,7 @@ export async function verifyWaitlistEmail(req, res) {
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: "Document ID wajib disertakan",
+        message: "Document ID must be included",
       });
     }
 
@@ -172,7 +193,7 @@ export async function verifyWaitlistEmail(req, res) {
     if (!docSnapshot.exists) {
       return res.status(404).json({
         success: false,
-        message: "Data waitlist tidak ditemukan",
+        message: "Waitlist data not found",
       });
     }
 
@@ -181,7 +202,7 @@ export async function verifyWaitlistEmail(req, res) {
     if (data.emailVerified) {
       return res.status(200).json({
         success: true,
-        message: "Email sudah terverifikasi sebelumnya",
+        message: "Email has been verified previously",
         data: { id, emailVerified: true },
       });
     }
@@ -197,14 +218,14 @@ export async function verifyWaitlistEmail(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Email berhasil diverifikasi",
+      message: "Email successfully verified",
       data: { id, emailVerified: true },
     });
   } catch (error) {
     console.error("❌ Error verifying waitlist email:", error);
     return res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan pada server.",
+      message: "An error occurred on the server.",
     });
   }
 }
