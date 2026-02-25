@@ -129,15 +129,17 @@ const buildWaitlistEmailHtml = ({ ticketId, email, reason }) => {
                 <tr>
                   <td
                     style="
-                      background:linear-gradient(135deg,#0d9488,#14b8a6);
-                      border-radius:14px;
-                      width:52px; height:52px;
-                      text-align:center;
-                      vertical-align:middle;
-                      font-size:26px;
-                      line-height:52px;
+                      width: 52px;
+                      height: 52px;
+                      text-align: center;
+                      vertical-align: middle;
+                      font-size: 26px;
+                      line-height: 52px;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
                     "
-                  >🤖</td>
+                  ><img src="https://firebasestorage.googleapis.com/v0/b/project-cdfb53f0-89f3-4240-b91.firebasestorage.app/o/assets%2FLogo%20Moriesly%20remove%20bg.png?alt=media&token=73eb4c52-ce68-4fa5-92dc-73777aafb841" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;"/></td>
                   <td style="padding-left:12px; vertical-align:middle;">
                     <p style="font-size:20px; font-weight:900; color:#0f172a; letter-spacing:-0.5px; line-height:1;">
                       Moriesly
