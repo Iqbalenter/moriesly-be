@@ -32,28 +32,42 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
-// Daftar origin yang diizinkan: app utama + whitelist-user-dashboard
+const parseEnvList = (envVar) => 
+  envVar ? envVar.split(",").map((s) => s.trim()).filter(Boolean) : [];
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173",
-  process.env.DASHBOARD_URL || "http://localhost:4000",
-  "http://localhost:5174",
-]
-  .concat(
-    (process.env.ALLOWED_ORIGINS || "")
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean),
-  )
-  .filter(Boolean);
+  // Ambil dari list URL (multiple)
+  ...parseEnvList(process.env.FRONTEND_URLS),
+  ...parseEnvList(process.env.DASHBOARD_URLS),
+  
+  // Ambil dari single URL (fallback)
+  process.env.FRONTEND_URL,
+  process.env.DASHBOARD_URL,
+  
+  // Default Origins
+  "https://moriesly.com",
+  "https://www.moriesly.com",
+  "https://whitelist-user-moriesly.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  
+  // Mobile/Capacitor Origins
+  "capacitor://localhost",
+  "http://localhost",
+  "https://localhost",
+  "ionic://localhost",
+].filter(Boolean);
+
+const uniqueOrigins = [...new Set(allowedOrigins)];
 
 // Setup Socket.io with CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: uniqueOrigins, // Gunakan uniqueOrigins
     methods: ["GET", "POST"],
     credentials: true,
   },
-  maxHttpBufferSize: 1e8, // 100MB for video frames
+  maxHttpBufferSize: 1e8,
 });
 
 // Middleware
@@ -61,10 +75,14 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Izinkan request tanpa origin (misal: Postman, server-to-server)
+      // Izinkan request tanpa origin (Postman/Server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`CORS: origin '${origin}' tidak diizinkan`));
+      
+      if (uniqueOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error(`CORS: origin '${origin}' tidak diizinkan`));
+      }
     },
     credentials: true,
   }),
