@@ -1,5 +1,4 @@
-import { auth } from "../config/firebase.config.js";
-import { checkSubscriptionExpiry } from "../service/subscription.service.js";
+import { auth } from '../config/firebase.config.js';
 
 /**
  * Middleware untuk verifikasi Firebase ID Token
@@ -10,36 +9,22 @@ export async function verifyFirebaseToken(req, res, next) {
     // Ambil token dari Authorization header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: "Token tidak ditemukan. Format: Bearer <token>",
+        message: 'Token tidak ditemukan. Format: Bearer <token>'
       });
     }
 
-    // Extract token — .trim() untuk antisipasi whitespace/newline tidak terduga
-    const idToken = authHeader.split("Bearer ")[1]?.trim();
+    // Extract token
+    const idToken = authHeader.split('Bearer ')[1];
 
     if (!idToken) {
-      console.warn(
-        "[auth.middleware] Token kosong setelah di-extract dari header.",
-      );
       return res.status(401).json({
         success: false,
-        alert: "Token tidak valid",
+        alert: 'Token tidak valid',
       });
     }
-
-    // DEBUG: log 60 karakter pertama token agar bisa dicek formatnya
-    console.log(
-      "[auth.middleware] Token received (first 60 chars):",
-      idToken.substring(0, 60),
-    );
-    console.log("[auth.middleware] Token length:", idToken.length);
-    console.log(
-      "[auth.middleware] Starts with 'eyJ':",
-      idToken.startsWith("eyJ"),
-    );
 
     // Verifikasi token dengan Firebase Admin
     const decodedToken = await auth.verifyIdToken(idToken);
@@ -48,50 +33,40 @@ export async function verifyFirebaseToken(req, res, next) {
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
-      emailVerified: decodedToken.email_verified,
+      emailVerified: decodedToken.email_verified
     };
-
-    // Auto-check subscription expiry
-    try {
-      await checkSubscriptionExpiry(decodedToken.uid);
-    } catch (error) {
-      // Log error but don't block request
-      console.error("Error checking subscription expiry:", error);
-    }
 
     // Lanjutkan ke handler berikutnya
     next();
+
   } catch (error) {
-    // Log error lengkap untuk debugging
-    console.error("[auth.middleware] verifyIdToken FAILED:");
-    console.error("  → error.code   :", error.code);
-    console.error("  → error.message:", error.message);
+    console.error('Error verifying token:', error);
 
-    if (error.code === "auth/id-token-expired") {
+    if (error.code === 'auth/id-token-expired') {
       return res.status(401).json({
         success: false,
-        message: "Token sudah expired",
+        message: 'Token sudah expired'
       });
     }
 
-    if (error.code === "auth/id-token-revoked") {
+    if (error.code === 'auth/id-token-revoked') {
       return res.status(401).json({
         success: false,
-        message: "Token sudah dicabut",
+        message: 'Token sudah dicabut'
       });
     }
 
-    if (error.code === "auth/argument-error") {
+    if (error.code === 'auth/argument-error') {
       return res.status(401).json({
         success: false,
-        alert: "Token tidak valid",
+        alert: 'Token tidak valid',
       });
     }
 
     return res.status(401).json({
       success: false,
-      message: "Gagal memverifikasi token",
-      error: error.message,
+      message: 'Gagal memverifikasi token',
+      error: error.message
     });
   }
 }
@@ -104,12 +79,12 @@ export async function optionalAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       // Tidak ada token, lanjutkan tanpa user info
       return next();
     }
 
-    const idToken = authHeader.split("Bearer ")[1];
+    const idToken = authHeader.split('Bearer ')[1];
 
     if (!idToken) {
       return next();
@@ -122,15 +97,62 @@ export async function optionalAuth(req, res, next) {
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
-      emailVerified: decodedToken.email_verified,
+      emailVerified: decodedToken.email_verified
     };
 
     next();
+
   } catch (error) {
-    console.error("Error in optional auth:", error);
+    console.error('Error in optional auth:', error);
     // Jika error, tetap lanjutkan tanpa user info
     next();
   }
 }
 
 export const authenticate = verifyFirebaseToken;
+
+/**
+ * Middleware khusus admin
+ * Verifikasi token DAN pastikan custom claim admin:true
+ */
+export async function verifyAdminToken(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token tidak ditemukan. Format: Bearer <token>',
+      });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+
+    if (!decodedToken.admin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak. Hanya admin yang dapat mengakses endpoint ini.',
+      });
+    }
+
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      emailVerified: decodedToken.email_verified,
+      role: 'admin',
+    };
+
+    next();
+  } catch (error) {
+    if (error.code === 'auth/id-token-expired') {
+      return res.status(401).json({ success: false, message: 'Token sudah expired' });
+    }
+    return res.status(401).json({
+      success: false,
+      message: 'Gagal memverifikasi token',
+      error: error.message,
+    });
+  }
+}
+

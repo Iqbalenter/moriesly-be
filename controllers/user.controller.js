@@ -218,7 +218,11 @@ export async function login(req, res) {
       });
     }
 
-    // Return ID Token (bukan custom token)
+    // Generate custom token menggunakan Firebase Admin SDK
+    // Custom token digunakan oleh client untuk signInWithCustomToken()
+    const customToken = await auth.createCustomToken(authData.localId);
+
+    // Return ID Token + Custom Token
     res.status(200).json({
       success: true,
       message: "Login berhasil",
@@ -229,9 +233,10 @@ export async function login(req, res) {
           displayName: profile.name,
         },
         profile,
-        token: authData.idToken, // ✅ ID Token yang bisa langsung dipakai
+        token: authData.idToken, // ✅ ID Token untuk request langsung
+        customToken, // ✅ Custom Token untuk signInWithCustomToken() di client
         refreshToken: authData.refreshToken,
-        expiresIn: authData.expiresIn, // Token berlaku selama ini (dalam detik)
+        expiresIn: authData.expiresIn,
       },
     });
   } catch (error) {
@@ -317,7 +322,7 @@ export async function refreshToken(req, res) {
           grant_type: "refresh_token",
           refresh_token: refreshToken,
         }),
-      }
+      },
     );
 
     const data = await response.json();

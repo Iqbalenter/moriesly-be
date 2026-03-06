@@ -518,3 +518,408 @@ export async function sendWaitlistTicketEmail({ toEmail, ticketId, reason }) {
     return { success: false, error: err.message };
   }
 }
+
+// ─── Approved Email Template ──────────────────────────────────────────────────
+
+const buildWaitlistApprovedHtml = ({ ticketId, email, note }) => {
+  const year = new Date().getFullYear();
+  return /* html */ `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waitlist Approved – Moriesly</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #1e293b;
+    }
+    a { color: #14b8a6; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0"
+    style="background-color:#f1f5f9; padding:48px 16px;" role="presentation">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" border="0"
+          style="max-width:560px;width:100%;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.08);"
+          role="presentation">
+
+          <!-- Top accent bar - green -->
+          <tr>
+            <td height="5"
+              style="background:linear-gradient(90deg,#16a34a 0%,#22c55e 50%,#4ade80 100%);"></td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding:48px 48px 32px;">
+              <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom:28px;">
+                <tr>
+                  <td style="width:52px;height:52px;">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/project-cdfb53f0-89f3-4240-b91.firebasestorage.app/o/assets%2FLogo%20Moriesly%20remove%20bg.png?alt=media&token=73eb4c52-ce68-4fa5-92dc-73777aafb841"
+                      style="width:100%;height:100%;object-fit:contain;" />
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <p style="font-size:20px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;line-height:1;">Moriesly</p>
+                    <p style="font-size:10px;font-weight:600;color:#14b8a6;letter-spacing:3px;text-transform:uppercase;margin-top:3px;">AI Health Platform</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Badge approved -->
+              <div style="display:inline-block;background:#f0fdf4;border:1px solid #86efac;border-radius:50px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#16a34a;margin-bottom:18px;">
+                ✅ Waitlist Approved
+              </div>
+
+              <h1 style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-0.8px;line-height:1.2;margin-bottom:14px;">
+                Congratulations! You're In! 🎉
+              </h1>
+              <p style="font-size:14px;color:#64748b;line-height:1.7;max-width:380px;margin:0 auto;">
+                Great news! Your waitlist application has been <strong style="color:#16a34a;">approved</strong>.
+                Welcome to the Moriesly early access program!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Ticket Box -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:18px;"
+                role="presentation">
+                <tr>
+                  <td align="center" style="padding:24px;">
+                    <p style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#16a34a;margin-bottom:8px;">
+                      🎫 Your Ticket
+                    </p>
+                    <p style="font-family:'Courier New',Courier,monospace;font-size:32px;font-weight:900;color:#15803d;letter-spacing:8px;line-height:1;">
+                      #${ticketId}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          ${
+            note
+              ? `
+          <!-- Admin Note -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#94a3b8;margin-bottom:10px;">
+                Note from Admin
+              </p>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #22c55e;border-radius:10px;padding:16px 20px;">
+                <p style="font-size:13px;color:#334155;line-height:1.7;">${note}</p>
+              </div>
+            </td>
+          </tr>`
+              : ""
+          }
+
+          <!-- What's Next -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#94a3b8;margin-bottom:14px;">
+                What Happens Next
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td style="vertical-align:top;width:34px;padding-bottom:14px;">
+                    <div style="width:30px;height:30px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:50%;font-size:12px;font-weight:800;color:#fff;text-align:center;line-height:30px;">1</div>
+                  </td>
+                  <td style="padding-left:14px;vertical-align:top;padding-bottom:14px;">
+                    <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:3px;">Check your email for access details</p>
+                    <p style="font-size:12px;color:#64748b;line-height:1.6;">We'll send your login credentials and onboarding instructions shortly.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="vertical-align:top;width:34px;">
+                    <div style="width:30px;height:30px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:50%;font-size:12px;font-weight:800;color:#fff;text-align:center;line-height:30px;">2</div>
+                  </td>
+                  <td style="padding-left:14px;vertical-align:top;">
+                    <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:3px;">Start your health journey</p>
+                    <p style="font-size:12px;color:#64748b;line-height:1.6;">Be among the first to experience Moriesly's AI-powered health intelligence platform.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td align="center" style="padding:0 48px 48px;">
+              <a href="https://moriesly.com"
+                style="display:inline-block;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;padding:15px 40px;border-radius:50px;box-shadow:0 6px 24px rgba(34,197,94,0.35);">
+                Visit Moriesly &rarr;
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:0 48px 36px;border-top:1px solid #f1f5f9;">
+              <p style="font-size:11px;color:#94a3b8;line-height:1.7;margin-top:24px;">
+                &copy; ${year} Moriesly &middot; All rights reserved
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`.trim();
+};
+
+// ─── Rejected Email Template ──────────────────────────────────────────────────
+
+const buildWaitlistRejectedHtml = ({ ticketId, email, note }) => {
+  const year = new Date().getFullYear();
+  return /* html */ `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waitlist Update – Moriesly</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: #1e293b;
+    }
+    a { color: #14b8a6; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0"
+    style="background-color:#f1f5f9; padding:48px 16px;" role="presentation">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" border="0"
+          style="max-width:560px;width:100%;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.08);"
+          role="presentation">
+
+          <!-- Top accent bar - slate/gray -->
+          <tr>
+            <td height="5"
+              style="background:linear-gradient(90deg,#475569 0%,#64748b 50%,#94a3b8 100%);"></td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding:48px 48px 32px;">
+              <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom:28px;">
+                <tr>
+                  <td style="width:52px;height:52px;">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/project-cdfb53f0-89f3-4240-b91.firebasestorage.app/o/assets%2FLogo%20Moriesly%20remove%20bg.png?alt=media&token=73eb4c52-ce68-4fa5-92dc-73777aafb841"
+                      style="width:100%;height:100%;object-fit:contain;" />
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <p style="font-size:20px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;line-height:1;">Moriesly</p>
+                    <p style="font-size:10px;font-weight:600;color:#14b8a6;letter-spacing:3px;text-transform:uppercase;margin-top:3px;">AI Health Platform</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Badge -->
+              <div style="display:inline-block;background:#f8fafc;border:1px solid #cbd5e1;border-radius:50px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#64748b;margin-bottom:18px;">
+                📋 Waitlist Update
+              </div>
+
+              <h1 style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-0.8px;line-height:1.2;margin-bottom:14px;">
+                Thank You for Your Interest
+              </h1>
+              <p style="font-size:14px;color:#64748b;line-height:1.7;max-width:400px;margin:0 auto;">
+                After reviewing your application, we're unable to offer early access at this time.
+                We genuinely appreciate your interest in Moriesly.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Ticket Box -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:18px;"
+                role="presentation">
+                <tr>
+                  <td align="center" style="padding:24px;">
+                    <p style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">
+                      🎫 Your Ticket Reference
+                    </p>
+                    <p style="font-family:'Courier New',Courier,monospace;font-size:32px;font-weight:900;color:#475569;letter-spacing:8px;line-height:1;">
+                      #${ticketId}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          ${
+            note
+              ? `
+          <!-- Admin Note -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#94a3b8;margin-bottom:10px;">
+                Note from Admin
+              </p>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #94a3b8;border-radius:10px;padding:16px 20px;">
+                <p style="font-size:13px;color:#334155;line-height:1.7;">${note}</p>
+              </div>
+            </td>
+          </tr>`
+              : ""
+          }
+
+          <!-- Stay Connected -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <div style="background:linear-gradient(135deg,#f0fdfa,#ecfeff);border:1px solid #5eead4;border-radius:14px;padding:24px;">
+                <p style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px;">Stay Connected 🌐</p>
+                <p style="font-size:12px;color:#64748b;line-height:1.7;">
+                  We're continuously expanding our early access. Follow our updates at
+                  <a href="https://moriesly.com" style="color:#0d9488;font-weight:600;">moriesly.com</a>
+                  and you may be invited in a future batch.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td align="center" style="padding:0 48px 48px;">
+              <a href="https://moriesly.com"
+                style="display:inline-block;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#ffffff;font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;padding:15px 40px;border-radius:50px;box-shadow:0 6px 24px rgba(20,184,166,0.35);">
+                Visit Moriesly &rarr;
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:0 48px 36px;border-top:1px solid #f1f5f9;">
+              <p style="font-size:11px;color:#94a3b8;line-height:1.7;margin-top:24px;">
+                &copy; ${year} Moriesly &middot; All rights reserved
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`.trim();
+};
+
+// ─── Send Approved Email ──────────────────────────────────────────────────────
+
+/**
+ * Kirim email notifikasi waitlist APPROVED ke user.
+ * @param {object} param
+ * @param {string} param.toEmail  - Recipient email
+ * @param {string} param.ticketId - Waitlist ticket ID
+ * @param {string|null} param.note - Catatan dari admin (opsional)
+ */
+export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note }) {
+  try {
+    const transporter = createTransporter();
+    const html = buildWaitlistApprovedHtml({ ticketId, email: toEmail, note });
+
+    const info = await transporter.sendMail({
+      from: getSender(),
+      to: toEmail,
+      subject: `🎉 You're Approved! Welcome to Moriesly Early Access – Ticket #${ticketId}`,
+      html,
+      text: [
+        `Congratulations!`,
+        ``,
+        `Your waitlist application has been APPROVED.`,
+        ``,
+        `Ticket ID : #${ticketId}`,
+        `Email     : ${toEmail}`,
+        note ? `Note      : ${note}` : "",
+        ``,
+        `We'll send your access details shortly. Welcome to Moriesly!`,
+        ``,
+        `– Moriesly Team`,
+        `https://moriesly.com`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+
+    console.log(
+      `📧 Approved email sent → ${toEmail} | messageId: ${info.messageId}`,
+    );
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error(
+      `❌ Failed to send approved email to ${toEmail}:`,
+      err.message,
+    );
+    return { success: false, error: err.message };
+  }
+}
+
+// ─── Send Rejected Email ──────────────────────────────────────────────────────
+
+/**
+ * Kirim email notifikasi waitlist REJECTED ke user.
+ * @param {object} param
+ * @param {string} param.toEmail  - Recipient email
+ * @param {string} param.ticketId - Waitlist ticket ID
+ * @param {string|null} param.note - Catatan dari admin (opsional)
+ */
+export async function sendWaitlistRejectedEmail({ toEmail, ticketId, note }) {
+  try {
+    const transporter = createTransporter();
+    const html = buildWaitlistRejectedHtml({ ticketId, email: toEmail, note });
+
+    const info = await transporter.sendMail({
+      from: getSender(),
+      to: toEmail,
+      subject: `Moriesly Waitlist Update – Ticket #${ticketId}`,
+      html,
+      text: [
+        `Thank you for your interest in Moriesly.`,
+        ``,
+        `After reviewing your application, we're unable to offer early access at this time.`,
+        ``,
+        `Ticket ID : #${ticketId}`,
+        `Email     : ${toEmail}`,
+        note ? `Note      : ${note}` : "",
+        ``,
+        `We're continuously expanding our early access. Stay tuned at moriesly.com.`,
+        ``,
+        `– Moriesly Team`,
+        `https://moriesly.com`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+
+    console.log(
+      `📧 Rejected email sent → ${toEmail} | messageId: ${info.messageId}`,
+    );
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error(
+      `❌ Failed to send rejected email to ${toEmail}:`,
+      err.message,
+    );
+    return { success: false, error: err.message };
+  }
+}

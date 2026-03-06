@@ -1,11 +1,9 @@
-// IMPORTANT: Load environment variables FIRST
-import "./config/env.config.js";
-
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import helmet from "helmet";
+import dotenv from "dotenv";
 
 // Import routes yang terstruktur berdasarkan halaman FE
 import homeRoutes from "./routes/home.routes.js";
@@ -17,70 +15,44 @@ import trainRoutes from "./routes/train.routes.js";
 import bioRoutes from "./routes/bio.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import logRoutes from "./routes/log.routes.js";
-import feedRoutes from "./routes/feed.routes.js";
-import foodlogRoutes from "./routes/foodlog.routes.js";
-import dashboardRoutes from "./routes/dashboard.routes.js";
 
 // Import routes utility (scan, auth, video call)
 import scanRoutes from "./routes/scan.routes.js";
 import userRoutes from "./routes/user.routes.js"; // Auth endpoints (register, login, verify)
-import subscriptionRoutes from "./routes/subscription.routes.js"; // Subscription & role management
+import adminRoutes from "./routes/admin.routes.js"; // Admin auth endpoints
 import waitlistRoutes from "./routes/waitlist.routes.js"; // Waitlist management
-// import videocallRoutes from "./routes/videocall.routes.js";
+import videocallRoutes from "./routes/videocall.routes.js";
 
-// import { setupVideoCallHandlers } from "./controllers/videocall.controller.js";
+import { setupVideoCallHandlers } from "./controllers/videocall.controller.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
-const PORT = process.env.PORT || 8080; // Cloud Run menggunakan 8080 sebagai default
+const PORT = process.env.PORT || 3001;
 
-// Support multiple CORS origins via FRONTEND_URLS (comma-separated) or single FRONTEND_URL fallback
-const allowedOrigins = process.env.FRONTEND_URLS
-  ? process.env.FRONTEND_URLS.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-  : [
-      process.env.FRONTEND_URL,
-      "https://moriesly.com",
-      "https://www.moriesly.com",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      // Capacitor mobile app origins
-      "capacitor://localhost",
-      "http://localhost",
-      "https://localhost",
-      "ionic://localhost",
-    ];
+// Daftar origin yang diizinkan: app utama + whitelist-user-dashboard
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.DASHBOARD_URL || "http://localhost:4000",
+  "http://localhost:5174",
+]
+  .concat(
+    (process.env.ALLOWED_ORIGINS || "")
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean),
+  )
+  .filter(Boolean);
 
+// Setup Socket.io with CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, etc)
-      if (!origin) return callback(null, true);
-
-      // Allow all Capacitor schemes
-      if (
-        origin.startsWith("capacitor://") ||
-        origin.startsWith("ionic://") ||
-        origin === "http://localhost" ||
-        origin === "https://localhost"
-      ) {
-        return callback(null, true);
-      }
-
-      // Check against allowed origins list
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // Reject other origins
-      callback(new Error("Not allowed by CORS"));
-    },
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
-
   maxHttpBufferSize: 1e8, // 100MB for video frames
 });
 
@@ -89,26 +61,10 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, etc)
+      // Izinkan request tanpa origin (misal: Postman, server-to-server)
       if (!origin) return callback(null, true);
-
-      // Allow all Capacitor schemes
-      if (
-        origin.startsWith("capacitor://") ||
-        origin.startsWith("ionic://") ||
-        origin === "http://localhost" ||
-        origin === "https://localhost"
-      ) {
-        return callback(null, true);
-      }
-
-      // Check against allowed origins list
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // Reject other origins
-      callback(new Error("Not allowed by CORS"));
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS: origin '${origin}' tidak diizinkan`));
     },
     credentials: true,
   }),
@@ -119,12 +75,6 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 // Health check
 app.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Moriesly Backend is running!" });
-});
-
-// Request logging middleware (untuk debugging)
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
 });
 
 // ==========================================
@@ -181,31 +131,13 @@ app.use("/api/bio", bioRoutes);
  * Video call menggunakan WebSocket
  */
 app.use("/api/chat", chatRoutes);
-// app.use("/api/videocall", videocallRoutes);
+app.use("/api/videocall", videocallRoutes);
 
 /**
  * LOG PAGE - Comprehensive logging
  * Endpoints: activity logs, food logs, ledger history
  */
 app.use("/api/log", logRoutes);
-
-/**
- * FEED PAGE - Moriesly Feed (Intelligence News)
- * Endpoints: generate feed articles, get usage stats
- */
-app.use("/api/feed", feedRoutes);
-
-/**
- * FOODLOG API - Food logging & tracking
- * Endpoints: add food log, get logs, statistics
- */
-app.use("/api/foodlog", foodlogRoutes);
-
-/**
- * DASHBOARD API - Web dashboard analytics
- * Endpoints: metabolic overview
- */
-app.use("/api/dashboard", dashboardRoutes);
 
 // ==========================================
 // UTILITY ROUTES (digunakan di berbagai halaman)
@@ -226,60 +158,27 @@ app.use("/api/scan", scanRoutes);
 app.use("/api/users", userRoutes);
 
 /**
- * SUBSCRIPTION API - Manage user roles & permissions
- * Endpoints: get subscription info, upgrade, usage stats, check expiry
+ * ADMIN AUTH API - Khusus untuk whitelist dashboard admin
+ * Endpoints: /api/admin/login, /api/admin/register
+ * Hanya user dengan custom claim admin:true yang bisa login
  */
-app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/admin", adminRoutes);
 
 /**
- * WAITLIST API - Pendaftaran waitlist early access
- * Endpoints: tambah waitlist, get waitlist, verifikasi email
+ * WAITLIST API - Manajemen waitlist user
+ * Public: POST /api/waitlist (daftar), PATCH /api/waitlist/:id/verify-email
+ * Admin:  GET, PUT, DELETE, PATCH /action (butuh token admin)
  */
 app.use("/api/waitlist", waitlistRoutes);
 
 // Setup WebSocket handlers for video call
-// setupVideoCallHandlers(io);
-
-// ==========================================
-// BACKWARD COMPATIBILITY ROUTES (tanpa /api prefix)
-// ==========================================
-
-/**
- * Routes tanpa /api prefix untuk backward compatibility
- * Ini mem-forward request ke routes dengan /api prefix
- */
-app.use("/home", homeRoutes);
-app.use("/profile", profileRoutes);
-app.use("/status", statusRoutes);
-app.use("/track", trackRoutes);
-app.use("/diet", dietRoutes);
-app.use("/train", trainRoutes);
-app.use("/bio", bioRoutes);
-app.use("/chat", chatRoutes);
-app.use("/log", logRoutes);
-app.use("/feed", feedRoutes);
-app.use("/foodlog", foodlogRoutes);
-app.use("/dashboard", dashboardRoutes);
-app.use("/scan", scanRoutes);
-app.use("/users", userRoutes);
-app.use("/subscription", subscriptionRoutes);
-app.use("/waitlist", waitlistRoutes);
-
-// 404 handler - harus sebelum error handler
-app.use((req, res, next) => {
-  console.log(`⚠️  404 - Route not found: ${req.method} ${req.path}`);
-  res.status(404).json({
-    success: false,
-    message: `Selamat Datang Dari Moriesly`,
-  });
-});
+setupVideoCallHandlers(io);
 
 // Error handling middleware (harus di paling akhir)
 app.use(errorHandler);
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`Port : ${PORT}`);
   console.log(`\n${"=".repeat(60)}`);
   console.log(`🚀 MORIESLY BACKEND SERVER`);
   console.log(`${"=".repeat(60)}`);
@@ -296,21 +195,10 @@ httpServer.listen(PORT, () => {
   console.log(`   🧬 Bio:          /api/bio/*`);
   console.log(`   💬 Chat:         /api/chat/*`);
   console.log(`   📝 Log:          /api/log/*`);
-  console.log(`   📰 Feed:         /api/feed/*`);
   console.log(`\n🔧 UTILITY ROUTES:`);
   console.log(`   📸 Scan:         /api/scan/*`);
   console.log(`   🔐 Auth:         /api/users/*`);
-  console.log(`   💎 Subscription: /api/subscription/*`);
-  console.log(`   📋 Waitlist:      /api/waitlist/*`);
-  console.log(`   📹 Video Call:   /api/videocall/*`);
-  console.log(`\n✅ Route Order Issues: FIXED`);
-  console.log(`   - Specific routes now prioritized over parameterized routes`);
-  console.log(`   - 404 handler added for better error messages`);
-  console.log(`\n🔄 BACKWARD COMPATIBILITY:`);
-  console.log(`   - Routes also available WITHOUT /api prefix`);
-  console.log(`   - Example: /users/login OR /api/users/login (both work)`);
+  console.log(`   �️  Admin Auth:   /api/admin/*`);
+  console.log(`   �📹 Video Call:   /api/videocall/*`);
   console.log(`${"=".repeat(60)}\n`);
-
-  // Log registered routes untuk debugging
-  console.log(`📝 Logging enabled - Monitoring all incoming requests...`);
 });
