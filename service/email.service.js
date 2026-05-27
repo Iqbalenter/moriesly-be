@@ -521,7 +521,7 @@ export async function sendWaitlistTicketEmail({ toEmail, ticketId, reason }) {
 
 // ─── Approved Email Template ──────────────────────────────────────────────────
 
-const buildWaitlistApprovedHtml = ({ ticketId, email, note }) => {
+const buildWaitlistApprovedHtml = ({ ticketId, email, note, password }) => {
   const year = new Date().getFullYear();
   return /* html */ `
 <!DOCTYPE html>
@@ -607,9 +607,38 @@ const buildWaitlistApprovedHtml = ({ ticketId, email, note }) => {
             </td>
           </tr>
 
-          ${
-            note
-              ? `
+          ${password
+      ? `
+          <!-- Account Details Box -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1.5px solid #cbd5e1;border-radius:18px;"
+                role="presentation">
+                <tr>
+                  <td align="center" style="padding:24px;">
+                    <p style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#475569;margin-bottom:8px;">
+                      🔐 Detail Akun Login
+                    </p>
+                    <p style="font-size:14px;color:#334155;margin-bottom:8px;">
+                      Email: <strong>${email}</strong>
+                    </p>
+                    <p style="font-size:14px;color:#334155;margin-bottom:8px;">
+                      Password: <strong style="font-family:monospace; font-size:18px;">${password}</strong>
+                    </p>
+                    <p style="font-size:11px;color:#64748b;margin-top:12px;">
+                      <em>Disarankan untuk segera mengganti password Anda setelah login pertama kali.</em>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`
+      : ""
+    }
+
+          ${note
+      ? `
           <!-- Admin Note -->
           <tr>
             <td style="padding:0 48px 32px;">
@@ -621,8 +650,8 @@ const buildWaitlistApprovedHtml = ({ ticketId, email, note }) => {
               </div>
             </td>
           </tr>`
-              : ""
-          }
+      : ""
+    }
 
           <!-- What's Next -->
           <tr>
@@ -767,9 +796,8 @@ const buildWaitlistRejectedHtml = ({ ticketId, email, note }) => {
             </td>
           </tr>
 
-          ${
-            note
-              ? `
+          ${note
+      ? `
           <!-- Admin Note -->
           <tr>
             <td style="padding:0 48px 32px;">
@@ -781,8 +809,8 @@ const buildWaitlistRejectedHtml = ({ ticketId, email, note }) => {
               </div>
             </td>
           </tr>`
-              : ""
-          }
+      : ""
+    }
 
           <!-- Stay Connected -->
           <tr>
@@ -833,10 +861,10 @@ const buildWaitlistRejectedHtml = ({ ticketId, email, note }) => {
  * @param {string} param.ticketId - Waitlist ticket ID
  * @param {string|null} param.note - Catatan dari admin (opsional)
  */
-export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note }) {
+export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note, password }) {
   try {
     const transporter = createTransporter();
-    const html = buildWaitlistApprovedHtml({ ticketId, email: toEmail, note });
+    const html = buildWaitlistApprovedHtml({ ticketId, email: toEmail, note, password });
 
     const info = await transporter.sendMail({
       from: getSender(),
@@ -850,9 +878,11 @@ export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note }) {
         ``,
         `Ticket ID : #${ticketId}`,
         `Email     : ${toEmail}`,
+        password ? `Password  : ${password}` : "",
         note ? `Note      : ${note}` : "",
         ``,
-        `We'll send your access details shortly. Welcome to Moriesly!`,
+        `You can now login with the credentials above. Please change your password after logging in.`,
+        `Welcome to Moriesly!`,
         ``,
         `– Moriesly Team`,
         `https://moriesly.com`,

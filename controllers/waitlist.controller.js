@@ -40,6 +40,18 @@ const generateTicketId = () => {
   return `${part1}-${part2}`;
 };
 
+/**
+ * Generate random 12-character password
+ */
+const generateRandomPassword = () => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CREATE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -515,9 +527,40 @@ export async function actionWaitlistEntry(req, res) {
 
     // Kirim email notifikasi ke user — async, tidak memblokir response
     if (action === "approved") {
+      let generatedPassword = null;
+
+      try {
+        generatedPassword = generateRandomPassword();
+
+        // 1. Buat User di Firebase Auth
+        const userRecord = await admin.auth().createUser({
+          email: data.email,
+          password: generatedPassword,
+        });
+
+        // 2. Simpan Data User di Koleksi 'users'
+        await db.collection("users").doc(userRecord.uid).set({
+          uid: userRecord.uid,
+          email: data.email,
+          role: "user",
+          status: "active",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+          metadata: {
+            createdFrom: "whitelist-approval",
+            ticketId: data.ticketId
+          }
+        });
+
+        console.log(`✅ User account created in Auth and Firestore for ${data.email}`);
+      } catch (authErr) {
+        console.warn(`⚠️ Error creating user account:`, authErr.message);
+      }
+
       sendWaitlistApprovedEmail({
         toEmail: data.email,
         ticketId: data.ticketId,
+        password: generatedPassword,
         note: note?.trim() || null,
       }).then((result) => {
         if (result.success) {
