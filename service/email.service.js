@@ -521,7 +521,7 @@ export async function sendWaitlistTicketEmail({ toEmail, ticketId, reason }) {
 
 // ─── Approved Email Template ──────────────────────────────────────────────────
 
-const buildWaitlistApprovedHtml = ({ ticketId, email, note, password }) => {
+const buildWaitlistApprovedHtml = ({ ticketId, email, note, password, appDownloadUrl }) => {
   const year = new Date().getFullYear();
   return /* html */ `
 <!DOCTYPE html>
@@ -628,6 +628,37 @@ const buildWaitlistApprovedHtml = ({ ticketId, email, note, password }) => {
                     </p>
                     <p style="font-size:11px;color:#64748b;margin-top:12px;">
                       <em>Disarankan untuk segera mengganti password Anda setelah login pertama kali.</em>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>`
+      : ""
+    }
+
+          ${appDownloadUrl
+      ? `
+          <!-- Download App Box -->
+          <tr>
+            <td style="padding:0 48px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:18px;"
+                role="presentation">
+                <tr>
+                  <td align="center" style="padding:28px 24px;">
+                    <p style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#dcfce7;margin-bottom:10px;">
+                      📲 Aplikasi Moriesly Siap Diunduh
+                    </p>
+                    <p style="font-size:13px;color:#f0fdf4;line-height:1.6;margin-bottom:18px;max-width:380px;margin-left:auto;margin-right:auto;">
+                      Download aplikasi Android Moriesly dan login menggunakan akun di atas untuk mulai perjalanan kesehatan Anda.
+                    </p>
+                    <a href="${appDownloadUrl}"
+                      style="display:inline-block;background:#ffffff;color:#16a34a;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:14px 32px;border-radius:50px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+                      ⬇️ Download APK Moriesly
+                    </a>
+                    <p style="font-size:10px;color:#dcfce7;margin-top:14px;">
+                      File .apk &middot; Untuk perangkat Android
                     </p>
                   </td>
                 </tr>
@@ -864,7 +895,8 @@ const buildWaitlistRejectedHtml = ({ ticketId, email, note }) => {
 export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note, password }) {
   try {
     const transporter = createTransporter();
-    const html = buildWaitlistApprovedHtml({ ticketId, email: toEmail, note, password });
+    const appDownloadUrl = process.env.APP_DOWNLOAD_URL || null;
+    const html = buildWaitlistApprovedHtml({ ticketId, email: toEmail, note, password, appDownloadUrl });
 
     const info = await transporter.sendMail({
       from: getSender(),
@@ -882,6 +914,7 @@ export async function sendWaitlistApprovedEmail({ toEmail, ticketId, note, passw
         note ? `Note      : ${note}` : "",
         ``,
         `You can now login with the credentials above. Please change your password after logging in.`,
+        appDownloadUrl ? `Download the Moriesly app (APK): ${appDownloadUrl}` : "",
         `Welcome to Moriesly!`,
         ``,
         `– Moriesly Team`,
