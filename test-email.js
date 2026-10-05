@@ -1,0 +1,1 @@
+﻿import './config/env.config.js'; import { sendWaitlistApprovedEmail } from './service/email.service.js'; sendWaitlistApprovedEmail({ toEmail: 'morieslyai@gmail.com', ticketId: 'TEST-12', password: 'testPassword123' }).then(console.log).catch(console.error);

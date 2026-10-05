@@ -5,6 +5,17 @@ import {
     adminGetMe,
     adminRefreshToken,
     adminLogout,
+    adminOverview,
+    adminListUsers,
+    adminGetUserDetail,
+    adminUpdateUserRole,
+    adminUpdateUserStatus,
+    adminListPlans,
+    adminSeedDefaultPlans,
+    adminUpsertPlan,
+    adminListFeatures,
+    adminUpdateSubscription,
+    adminListActivityLogs,
 } from "../controllers/admin.controller.js";
 import { verifyAdminToken } from "../middleware/auth.middleware.js";
 
@@ -51,5 +62,26 @@ router.get("/me", verifyAdminToken, adminGetMe);
  * @header  Authorization: Bearer <idToken>
  */
 router.post("/logout", verifyAdminToken, adminLogout);
+
+// ─── Admin data management ──────────────────────────────────────────────────
+
+router.get("/overview", verifyAdminToken, adminOverview);
+
+router.get("/users", verifyAdminToken, adminListUsers);
+router.get("/users/:userId", verifyAdminToken, adminGetUserDetail);
+router.patch("/users/:userId/role", verifyAdminToken, adminUpdateUserRole);
+router.patch("/users/:userId/status", verifyAdminToken, adminUpdateUserStatus);
+router.patch(
+  "/users/:userId/subscription",
+  verifyAdminToken,
+  adminUpdateSubscription,
+);
+
+router.get("/plans", verifyAdminToken, adminListPlans);
+router.post("/plans/seed-defaults", verifyAdminToken, adminSeedDefaultPlans);
+router.put("/plans/:planId", verifyAdminToken, adminUpsertPlan);
+
+router.get("/features", verifyAdminToken, adminListFeatures);
+router.get("/activity-logs", verifyAdminToken, adminListActivityLogs);
 
 export default router;
