@@ -32,21 +32,29 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
-const parseEnvList = (envVar) => 
-  envVar ? envVar.split(",").map((s) => s.trim()).filter(Boolean) : [];
+const parseEnvList = (...envVars) =>
+  envVars
+    .filter(Boolean)
+    .flatMap((envVar) => envVar.split(","))
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 const allowedOrigins = [
-  // Ambil dari list URL (multiple)
-  ...parseEnvList(process.env.FRONTEND_URLS),
-  ...parseEnvList(process.env.DASHBOARD_URLS),
-  
-  // Ambil dari single URL (fallback)
-  process.env.FRONTEND_URL,
-  process.env.DASHBOARD_URL,
+  // Ambil dari env URL. Semua boleh comma-separated.
+  ...parseEnvList(
+    process.env.FRONTEND_URLS,
+    process.env.DASHBOARD_URLS,
+    process.env.FRONTEND_URL,
+    process.env.DASHBOARD_URL,
+    // Backward compatibility kalau env lama terlanjur pakai prefix underscore.
+    process.env._FRONTEND_URL,
+    process.env._DASHBOARD_URL,
+  ),
   
   // Default Origins
   "https://moriesly.com",
   "https://www.moriesly.com",
+  "https://moriesly-dashboard.vercel.app",
   "https://whitelist-user-moriesly.vercel.app",
   "http://localhost:3000",
   "http://localhost:3001",
