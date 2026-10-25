@@ -27,7 +27,7 @@ export async function verifyFirebaseToken(req, res, next) {
     }
 
     // Verifikasi token dengan Firebase Admin
-    const decodedToken = await auth.verifyIdToken(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken, true);
 
     // Attach user info ke request object
     req.user = {
@@ -91,7 +91,7 @@ export async function optionalAuth(req, res, next) {
     }
 
     // Verifikasi token
-    const decodedToken = await auth.verifyIdToken(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken, true);
 
     // Attach user info ke request object
     req.user = {
@@ -127,7 +127,7 @@ export async function verifyAdminToken(req, res, next) {
     }
 
     const idToken = authHeader.split('Bearer ')[1];
-    const decodedToken = await auth.verifyIdToken(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken, true);
 
     if (!decodedToken.admin) {
       return res.status(403).json({

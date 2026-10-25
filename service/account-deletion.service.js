@@ -1,4 +1,4 @@
-import { db } from "../config/firebase.config.js";
+import { auth, db } from "../config/firebase.config.js";
 
 const REQUESTS_COLLECTION = "account_deletion_requests";
 const USERS_COLLECTION = "users";
@@ -35,7 +35,7 @@ function serializeRequest(doc) {
 
 function assertStatusTransition(currentStatus, nextStatus) {
   const transitions = {
-    pending: ["processing", "rejected"],
+    pending: ["processing", "completed", "rejected"],
     processing: ["completed"],
     completed: [],
     rejected: [],
@@ -47,6 +47,62 @@ function assertStatusTransition(currentStatus, nextStatus) {
       409,
     );
   }
+}
+
+function isMissingAuthUser(error) {
+  return error?.code === "auth/user-not-found";
+}
+
+async function deleteFirebaseAuthUser(userId) {
+  try {
+    await auth.revokeRefreshTokens(userId);
+  } catch (error) {
+    if (!isMissingAuthUser(error)) {
+      throw serviceError(
+        `Gagal mencabut sesi pengguna: ${error.message || "unknown error"}`,
+        502,
+      );
+    }
+  }
+
+  try {
+    await auth.deleteUser(userId);
+  } catch (error) {
+    // Idempotent: retry tetap aman bila akun Auth sudah terhapus sebelumnya.
+    if (!isMissingAuthUser(error)) {
+      throw serviceError(
+        `Gagal menghapus akun Firebase: ${error.message || "unknown error"}`,
+        502,
+      );
+    }
+  }
+}
+
+async function deleteUserActivityLogs(userId) {
+  const activityCollection = db.collection(ACTIVITY_COLLECTION);
+  const [actorLogs, targetLogs] = await Promise.all([
+    activityCollection.where("actorId", "==", userId).get(),
+    activityCollection.where("targetId", "==", userId).get(),
+  ]);
+  const refs = new Map();
+
+  for (const doc of [...actorLogs.docs, ...targetLogs.docs]) {
+    refs.set(doc.ref.path, doc.ref);
+  }
+
+  if (!refs.size) return;
+
+  const writer = db.bulkWriter();
+  for (const ref of refs.values()) writer.delete(ref);
+  await writer.close();
+}
+
+async function permanentlyDeleteUserAccount(userId) {
+  // Auth dihapus lebih dulu agar user tidak dapat membuat data baru saat
+  // pembersihan Firestore berjalan. Semua langkah aman untuk dicoba ulang.
+  await deleteFirebaseAuthUser(userId);
+  await db.recursiveDelete(db.collection(USERS_COLLECTION).doc(userId));
+  await deleteUserActivityLogs(userId);
 }
 
 export async function createAccountDeletionRequest(
@@ -212,6 +268,65 @@ export async function updateAccountDeletionRequestStatus(
 
   const requestRef = db.collection(REQUESTS_COLLECTION).doc(requestId);
   const activityRef = db.collection(ACTIVITY_COLLECTION).doc();
+
+  if (status === "completed") {
+    const requestDoc = await requestRef.get();
+    if (!requestDoc.exists) {
+      throw serviceError("Permintaan penghapusan tidak ditemukan.", 404);
+    }
+
+    const request = requestDoc.data() || {};
+    assertStatusTransition(request.status || "pending", status);
+
+    if (!request.userId) {
+      throw serviceError(
+        "Permintaan tidak memiliki userId yang dapat dihapus.",
+        422,
+      );
+    }
+
+    await permanentlyDeleteUserAccount(request.userId);
+
+    await db.runTransaction(async (transaction) => {
+      const latestDoc = await transaction.get(requestRef);
+      if (!latestDoc.exists) {
+        throw serviceError("Permintaan penghapusan tidak ditemukan.", 404);
+      }
+
+      const latest = latestDoc.data() || {};
+      assertStatusTransition(latest.status || "pending", status);
+      const now = new Date().toISOString();
+      const normalizedAdminNote = String(adminNote || "").trim() || null;
+
+      transaction.update(requestRef, {
+        status: "completed",
+        adminNote: normalizedAdminNote,
+        processedBy: adminId,
+        processedAt: latest.processedAt || now,
+        resolvedAt: now,
+        updatedAt: now,
+        // Data identitas tidak perlu disimpan setelah akun berhasil dihapus.
+        userId: null,
+        displayName: "Deleted User",
+        email: null,
+        userCreatedAt: null,
+        reason: null,
+      });
+
+      transaction.set(activityRef, {
+        actorId: adminId,
+        action: "account_deletion.completed",
+        targetType: "accountDeletionRequest",
+        targetId: requestId,
+        before: { status: latest.status || "pending" },
+        after: { status: "completed", adminNote: normalizedAdminNote },
+        createdAt: now,
+      });
+    });
+
+    const completed = await requestRef.get();
+    return serializeRequest(completed);
+  }
 
   await db.runTransaction(async (transaction) => {
     const requestDoc = await transaction.get(requestRef);
