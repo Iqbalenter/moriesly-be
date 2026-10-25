@@ -43,6 +43,10 @@ import {
   getTrainingCompletion,
 } from "../service/user.service.js";
 import { calculateDailySugarLimit } from "../utils/calculator.js";
+import {
+  createAccountDeletionRequest,
+  getAccountDeletionRequestForUser,
+} from "../service/account-deletion.service.js";
 
 /**
  * Register user baru dengan email dan password
@@ -1789,6 +1793,54 @@ export async function getTrainingCompletionController(req, res) {
       success: false,
       message: "Terjadi kesalahan saat mengambil training completion",
       error: error.message,
+    });
+  }
+}
+
+/**
+ * Mengajukan permintaan penghapusan akun untuk user yang sedang login.
+ * Data tidak langsung dihapus; admin harus meninjau permintaan terlebih dahulu.
+ */
+export async function requestAccountDeletion(req, res) {
+  try {
+    const { reason = "", source = "Aplikasi" } = req.body || {};
+
+    if (String(reason).length > 1000 || String(source).length > 80) {
+      return res.status(400).json({
+        success: false,
+        message: "Alasan atau sumber permintaan terlalu panjang.",
+      });
+    }
+
+    const item = await createAccountDeletionRequest(req.user.uid, {
+      reason,
+      source,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Permintaan penghapusan akun berhasil dikirim.",
+      data: item,
+    });
+  } catch (error) {
+    console.error("[requestAccountDeletion]", error);
+    return res.status(error.status || 500).json({
+      success: false,
+      message: error.message || "Gagal mengirim permintaan penghapusan akun.",
+    });
+  }
+}
+
+/** Mengambil status permintaan penghapusan akun milik user yang sedang login. */
+export async function getMyAccountDeletionRequest(req, res) {
+  try {
+    const item = await getAccountDeletionRequestForUser(req.user.uid);
+    return res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    console.error("[getMyAccountDeletionRequest]", error);
+    return res.status(error.status || 500).json({
+      success: false,
+      message: error.message || "Gagal mengambil permintaan penghapusan akun.",
     });
   }
 }

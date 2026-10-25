@@ -1,5 +1,9 @@
 import { auth, db } from "../config/firebase.config.js";
 import { RolePermissions, UserRole, normalizeRole } from "../utils/role.config.js";
+import {
+  listAccountDeletionRequests,
+  updateAccountDeletionRequestStatus,
+} from "../service/account-deletion.service.js";
 
 const FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY;
 
@@ -905,5 +909,54 @@ export async function adminListActivityLogs(req, res) {
   } catch (error) {
     console.error("[adminListActivityLogs]", error);
     return res.status(500).json({ message: "Gagal mengambil activity logs", error: error.message });
+  }
+}
+
+export async function adminListAccountDeletionRequests(req, res) {
+  try {
+    const result = await listAccountDeletionRequests({
+      search: req.query.search || "",
+      status: req.query.status || "",
+    });
+    return res.json(result);
+  } catch (error) {
+    console.error("[adminListAccountDeletionRequests]", error);
+    return res.status(error.status || 500).json({
+      message: error.message || "Gagal mengambil permintaan penghapusan akun.",
+    });
+  }
+}
+
+export async function adminUpdateAccountDeletionRequestStatus(req, res) {
+  try {
+    const { status, adminNote = null } = req.body || {};
+
+    if (status === "rejected" && !String(adminNote || "").trim()) {
+      return res.status(400).json({
+        message: "Catatan admin wajib diisi ketika menolak permintaan.",
+      });
+    }
+
+    if (String(adminNote || "").length > 1000) {
+      return res.status(400).json({
+        message: "Catatan admin maksimal 1000 karakter.",
+      });
+    }
+
+    const item = await updateAccountDeletionRequestStatus(
+      req.params.requestId,
+      req.user.uid,
+      { status, adminNote },
+    );
+
+    return res.json({
+      message: "Status permintaan penghapusan berhasil diperbarui.",
+      item,
+    });
+  } catch (error) {
+    console.error("[adminUpdateAccountDeletionRequestStatus]", error);
+    return res.status(error.status || 500).json({
+      message: error.message || "Gagal memperbarui permintaan penghapusan akun.",
+    });
   }
 }

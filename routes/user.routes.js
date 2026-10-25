@@ -44,6 +44,8 @@ import {
   hasGeneratedTodayPlanController,
   updateTrainingCompletionController,
   getTrainingCompletionController,
+  requestAccountDeletion,
+  getMyAccountDeletionRequest,
   // Onboarding controllers
   saveAgentIdentityController,
   saveCalibrationController,
@@ -103,6 +105,28 @@ router.get("/me", verifyFirebaseToken, getCurrentUser);
  * @access  Private (memerlukan token)
  */
 router.get("/current", verifyFirebaseToken, getCurrentUser);
+
+/**
+ * @route   POST /api/users/account-deletion-request
+ * @desc    Ajukan penghapusan akun
+ * @access  Private
+ */
+router.post(
+  "/account-deletion-request",
+  verifyFirebaseToken,
+  requestAccountDeletion,
+);
+
+/**
+ * @route   GET /api/users/account-deletion-request
+ * @desc    Lihat status permintaan penghapusan akun milik user
+ * @access  Private
+ */
+router.get(
+  "/account-deletion-request",
+  verifyFirebaseToken,
+  getMyAccountDeletionRequest,
+);
 
 /**
  * @route   GET /api/users/profile

@@ -16,6 +16,8 @@ import {
     adminListFeatures,
     adminUpdateSubscription,
     adminListActivityLogs,
+    adminListAccountDeletionRequests,
+    adminUpdateAccountDeletionRequestStatus,
 } from "../controllers/admin.controller.js";
 import { verifyAdminToken } from "../middleware/auth.middleware.js";
 
@@ -83,5 +85,16 @@ router.put("/plans/:planId", verifyAdminToken, adminUpsertPlan);
 
 router.get("/features", verifyAdminToken, adminListFeatures);
 router.get("/activity-logs", verifyAdminToken, adminListActivityLogs);
+
+router.get(
+  "/account-deletion-requests",
+  verifyAdminToken,
+  adminListAccountDeletionRequests,
+);
+router.patch(
+  "/account-deletion-requests/:requestId/status",
+  verifyAdminToken,
+  adminUpdateAccountDeletionRequestStatus,
+);
 
 export default router;
