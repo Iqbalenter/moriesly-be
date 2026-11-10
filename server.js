@@ -55,6 +55,7 @@ const allowedOrigins = [
   "https://moriesly.com",
   "https://www.moriesly.com",
   "https://moriesly-dashboard.vercel.app",
+  "https://ops.moriesly.com",
   "https://whitelist-user-moriesly.vercel.app",
   "http://localhost:3000",
   "http://localhost:3001",
