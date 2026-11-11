@@ -1,4 +1,4 @@
-import { auth, db } from "../config/firebase.config.js";
+import firebaseAdmin, { auth, db } from "../config/firebase.config.js";
 import { RolePermissions, UserRole, normalizeRole } from "../utils/role.config.js";
 import {
   listAccountDeletionRequests,
@@ -367,26 +367,34 @@ function getUserStatus(data) {
 function getSubscriptionStatus(data) {
   const subscription = data.subscription || {};
   const raw = String(
-    data.subscriptionStatus || subscription.status || "",
+    subscription.status || data.subscriptionStatus || "",
   ).toLowerCase();
 
-  if (["trial", "active", "expired", "cancelled"].includes(raw)) return raw;
-
   const expiry = toIso(
-    data.subscriptionExpiry ||
-      data.subscriptionExpiresAt ||
-      subscription.currentPeriodEnd ||
-      subscription.endsAt,
+    subscription.currentPeriodEnd ||
+      subscription.endsAt ||
+      data.subscriptionExpiry ||
+      data.subscriptionExpiresAt,
   );
 
   if (expiry && new Date(expiry).getTime() < Date.now()) return "expired";
-  return normalizePlanId(data.role) === UserRole.FREE ? "expired" : "active";
+  if (["trial", "active", "expired", "cancelled"].includes(raw)) return raw;
+  return normalizePlanId(
+    subscription.plan || data.subscriptionPlan || data.role,
+  ) === UserRole.FREE
+    ? "expired"
+    : "active";
 }
 
 function getUserPlan(data) {
   const status = getSubscriptionStatus(data);
   if (status === "expired" || status === "cancelled") return UserRole.FREE;
-  return normalizePlanId(data.role || data.subscriptionPlan || UserRole.FREE);
+  return normalizePlanId(
+    data.subscription?.plan ||
+      data.subscriptionPlan ||
+      data.role ||
+      UserRole.FREE,
+  );
 }
 
 function defaultPlanRecord(id) {
@@ -415,10 +423,10 @@ function compactUser(doc) {
     plan: getUserPlan(data),
     subscriptionStatus: getSubscriptionStatus(data),
     expiredAt: toIso(
-      data.subscriptionExpiry ||
-        data.subscriptionExpiresAt ||
-        subscription.currentPeriodEnd ||
-        subscription.endsAt,
+      subscription.currentPeriodEnd ||
+        subscription.endsAt ||
+        data.subscriptionExpiry ||
+        data.subscriptionExpiresAt,
     ),
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
@@ -837,7 +845,6 @@ export async function adminUpdateSubscription(req, res) {
     const now = new Date().toISOString();
 
     const updateData = {
-      role: plan,
       subscriptionStatus,
       subscriptionStartedAt: startedAt,
       subscriptionExpiry: expiresAt,
@@ -852,6 +859,11 @@ export async function adminUpdateSubscription(req, res) {
         currentPeriodEnd: expiresAt,
         source: req.body.source || "admin",
       },
+      // Remove legacy plan fields. All access checks now read subscription.*.
+      role: firebaseAdmin.firestore.FieldValue.delete(),
+      roleUpdatedAt: firebaseAdmin.firestore.FieldValue.delete(),
+      subscriptionPlan: firebaseAdmin.firestore.FieldValue.delete(),
+      subscriptionExpiresAt: firebaseAdmin.firestore.FieldValue.delete(),
     };
 
     await userRef.set(updateData, { merge: true });

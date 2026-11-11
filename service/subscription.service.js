@@ -1,6 +1,13 @@
 import { db } from "../config/firebase.config.js";
 import admin from "../config/firebase.config.js";
-import { UserRole, canUpgradeTo, normalizeRole } from "../utils/role.config.js";
+import {
+  UserRole,
+  canUpgradeTo,
+  normalizeRole,
+  getSubscriptionExpiry,
+  getSubscriptionStatus as resolveSubscriptionStatus,
+  getUserSubscriptionRole,
+} from "../utils/role.config.js";
 
 /**
  * Update user role/subscription
@@ -13,9 +20,18 @@ export async function updateUserRole(
   try {
     const userRef = db.collection("users").doc(userId);
     const normalizedRole = normalizeRole(newRole);
+    const now = new Date().toISOString();
     const updateData = {
-      role: normalizedRole,
-      roleUpdatedAt: new Date().toISOString(),
+      "subscription.plan": normalizedRole,
+      "subscription.status":
+        normalizedRole === UserRole.FREE ? "none" : "active",
+      "subscription.source": "admin",
+      subscriptionStatus:
+        normalizedRole === UserRole.FREE ? "none" : "active",
+      subscriptionSource: "admin",
+      subscriptionUpdatedAt: now,
+      role: admin.firestore.FieldValue.delete(),
+      roleUpdatedAt: admin.firestore.FieldValue.delete(),
     };
 
     // Jika handler role dan ada customPermissions
@@ -49,10 +65,11 @@ export async function getSubscriptionInfo(userId) {
     const userData = userDoc.data();
 
     return {
-      role: normalizeRole(userData.role || UserRole.FREE),
-      roleUpdatedAt: userData.roleUpdatedAt || null,
+      role: getUserSubscriptionRole(userData),
+      status: resolveSubscriptionStatus(userData),
       customPermissions: userData.customPermissions || null,
-      subscriptionExpiry: userData.subscriptionExpiry || null,
+      subscriptionExpiry: getSubscriptionExpiry(userData),
+      subscription: userData.subscription || null,
       paymentHistory: userData.paymentHistory || [],
     };
   } catch (error) {
@@ -144,7 +161,8 @@ export async function processUpgrade(userId, targetRole, paymentData) {
       throw new Error("User not found");
     }
 
-    const currentRole = normalizeRole(userDoc.data().role || UserRole.FREE);
+    const currentData = userDoc.data();
+    const currentRole = getUserSubscriptionRole(currentData);
 
     // Check if upgrade is valid
     const normalizedTargetRole = normalizeRole(targetRole);
@@ -159,10 +177,23 @@ export async function processUpgrade(userId, targetRole, paymentData) {
     const expiry = new Date();
     expiry.setMonth(expiry.getMonth() + 1); // 1 bulan subscription
 
+    const now = new Date().toISOString();
     await userRef.update({
-      role: normalizedTargetRole,
-      roleUpdatedAt: new Date().toISOString(),
+      subscription: {
+        ...(currentData.subscription || {}),
+        plan: normalizedTargetRole,
+        status: "active",
+        currentPeriodStart: now,
+        currentPeriodEnd: expiry.toISOString(),
+        source: "payment",
+      },
+      subscriptionStatus: "active",
+      subscriptionStartedAt: now,
       subscriptionExpiry: expiry.toISOString(),
+      subscriptionSource: "payment",
+      subscriptionUpdatedAt: now,
+      role: admin.firestore.FieldValue.delete(),
+      roleUpdatedAt: admin.firestore.FieldValue.delete(),
       paymentHistory: admin.firestore.FieldValue.arrayUnion({
         date: new Date().toISOString(),
         fromRole: currentRole,
@@ -197,11 +228,17 @@ export async function checkSubscriptionExpiry(userId) {
     }
 
     const userData = userDoc.data();
-    const role = normalizeRole(userData.role || UserRole.FREE);
-    const expiry = userData.subscriptionExpiry;
+    const role = getUserSubscriptionRole(userData);
+    const storedPlan = normalizeRole(
+      userData.subscription?.plan ||
+        userData.subscriptionPlan ||
+        userData.role ||
+        UserRole.FREE,
+    );
+    const expiry = getSubscriptionExpiry(userData);
 
     // FREE users tidak punya expiry
-    if (role === UserRole.FREE) {
+    if (storedPlan === UserRole.FREE) {
       return { expired: false, role };
     }
 
@@ -213,14 +250,18 @@ export async function checkSubscriptionExpiry(userId) {
       if (now > expiryDate) {
         // Downgrade to FREE
         await userRef.update({
-          role: UserRole.FREE,
-          roleUpdatedAt: new Date().toISOString(),
-          previousRole: role,
+          "subscription.plan": UserRole.FREE,
+          "subscription.status": "expired",
+          subscriptionStatus: "expired",
+          subscriptionUpdatedAt: new Date().toISOString(),
+          previousRole: storedPlan,
+          role: admin.firestore.FieldValue.delete(),
+          roleUpdatedAt: admin.firestore.FieldValue.delete(),
         });
 
         return {
           expired: true,
-          previousRole: role,
+          previousRole: storedPlan,
           newRole: UserRole.FREE,
         };
       }
@@ -246,7 +287,7 @@ export async function getSubscriptionStatus(userId) {
     }
 
     const userData = userDoc.data();
-    const role = normalizeRole(userData.role || UserRole.FREE);
+    const role = getUserSubscriptionRole(userData);
     const subscription = userData.subscription || {};
 
     // Feature details untuk setiap tier
@@ -279,12 +320,7 @@ export async function getSubscriptionStatus(userId) {
     };
 
     // Tentukan status berdasarkan role
-    let status = "active";
-    if (role === UserRole.FREE) {
-      status = "none";
-    } else if (subscription.status) {
-      status = subscription.status;
-    }
+    const status = resolveSubscriptionStatus(userData);
 
     // Build response
     const response = {
@@ -321,7 +357,7 @@ export async function getSubscriptionStatus(userId) {
         plan: subscription.plan,
         currentPeriodStart: toISOString(subscription.currentPeriodStart),
         currentPeriodEnd: toISOString(
-          subscription.currentPeriodEnd || userData.subscriptionExpiry,
+          getSubscriptionExpiry(userData),
         ),
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || false,
         endsAt: toISOString(subscription.endsAt),

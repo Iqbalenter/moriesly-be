@@ -2,7 +2,10 @@ import videoCallService from "../service/videocall.service.js";
 import geminiLiveService from "../service/gemini-live.service.js";
 import { auth } from "../config/firebase.config.js";
 import { getUserProfile } from "../service/user.service.js";
-import { getUserPermissions } from "../utils/role.config.js";
+import {
+  getUserPermissions,
+  getUserSubscriptionRole,
+} from "../utils/role.config.js";
 import { checkVideoCallLimit } from "../service/videocall-usage.service.js";
 
 /**
@@ -59,7 +62,7 @@ export function setupVideoCallHandlers(io) {
             success: false,
             error: "Video call requires Pro Plan or Pro Max Plan subscription",
             code: "PERMISSION_DENIED",
-            currentRole: userProfile.role,
+            currentRole: getUserSubscriptionRole(userProfile),
             upgradeRequired: true,
           });
           return;
@@ -75,7 +78,7 @@ export function setupVideoCallHandlers(io) {
             currentUsage: limitCheck.used,
             limit: limitCheck.limit,
             remaining: 0,
-            currentRole: userProfile.role,
+            currentRole: getUserSubscriptionRole(userProfile),
             upgradeRequired: true,
           });
           return;

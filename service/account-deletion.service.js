@@ -296,11 +296,10 @@ export async function updateAccountDeletionRequestStatus(
       const latest = latestDoc.data() || {};
       assertStatusTransition(latest.status || "pending", status);
       const now = new Date().toISOString();
-      const normalizedAdminNote = String(adminNote || "").trim() || null;
 
       transaction.update(requestRef, {
         status: "completed",
-        adminNote: normalizedAdminNote,
+        adminNote: null,
         processedBy: adminId,
         processedAt: latest.processedAt || now,
         resolvedAt: now,
@@ -319,7 +318,7 @@ export async function updateAccountDeletionRequestStatus(
         targetType: "accountDeletionRequest",
         targetId: requestId,
         before: { status: latest.status || "pending" },
-        after: { status: "completed", adminNote: normalizedAdminNote },
+        after: { status: "completed" },
         createdAt: now,
       });
     });

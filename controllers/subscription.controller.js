@@ -11,6 +11,7 @@ import {
   RolePermissions,
   UserRole,
   normalizeRole,
+  getUserSubscriptionRole,
 } from "../utils/role.config.js";
 import { getUserProfile } from "../service/user.service.js";
 
@@ -148,7 +149,7 @@ export async function getAvailablePlansController(req, res) {
   try {
     const userId = req.user.uid;
     const userProfile = await getUserProfile(userId);
-    const currentRole = normalizeRole(userProfile?.role || UserRole.FREE);
+    const currentRole = getUserSubscriptionRole(userProfile);
 
     const plans = [
       {

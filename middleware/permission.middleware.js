@@ -3,8 +3,7 @@ import {
   hasPermission,
   checkLimit,
   isScanTypeAllowed,
-  normalizeRole,
-  UserRole,
+  getUserSubscriptionRole,
 } from "../utils/role.config.js";
 import { getUserProfile } from "../service/user.service.js";
 
@@ -29,7 +28,7 @@ export function requirePermission(permissionKey) {
 
       // Check permission
       if (!hasPermission(userProfile, permissionKey)) {
-        const role = normalizeRole(userProfile.role || UserRole.FREE);
+        const role = getUserSubscriptionRole(userProfile);
         return res.status(403).json({
           success: false,
           message: `This feature requires a higher subscription tier`,
@@ -84,7 +83,7 @@ export function requireLimit(limitKey, getCurrentUsageFn) {
       const limitCheck = checkLimit(userProfile, limitKey, currentUsage);
 
       if (!limitCheck.allowed) {
-        const role = normalizeRole(userProfile.role || UserRole.FREE);
+        const role = getUserSubscriptionRole(userProfile);
         return res.status(429).json({
           success: false,
           message: `Daily limit reached (${limitCheck.limit}/${limitCheck.limit})`,
@@ -141,7 +140,7 @@ export function requireScanType(scanType) {
       const allowedTypes = permissions.scanTypes || [];
 
       if (!isScanTypeAllowed(userProfile, scanType)) {
-        const role = normalizeRole(userProfile.role || UserRole.FREE);
+        const role = getUserSubscriptionRole(userProfile);
         return res.status(403).json({
           success: false,
           message: `Scan type '${scanType}' is not available in your plan`,

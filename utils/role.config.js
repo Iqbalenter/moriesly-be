@@ -41,6 +41,61 @@ export function normalizeRole(role) {
   return RoleAliases[normalized] || normalized;
 }
 
+export function getSubscriptionStatus(userProfile) {
+  const rawStatus =
+    userProfile?.subscription?.status ?? userProfile?.subscriptionStatus;
+  if (rawStatus) return String(rawStatus).toLowerCase().trim();
+
+  const rawPlan =
+    userProfile?.subscription?.plan ??
+    userProfile?.subscriptionPlan ??
+    userProfile?.role;
+  return normalizeRole(rawPlan) === UserRole.FREE ? "none" : "active";
+}
+
+export function getSubscriptionExpiry(userProfile) {
+  return (
+    userProfile?.subscription?.currentPeriodEnd ??
+    userProfile?.subscription?.endsAt ??
+    userProfile?.subscriptionExpiry ??
+    userProfile?.subscriptionExpiresAt ??
+    null
+  );
+}
+
+function toEpochMilliseconds(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate().getTime();
+  if (value instanceof Date) return value.getTime();
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+/**
+ * Resolve the effective app plan from the canonical nested subscription.
+ * Legacy root fields are read only as a migration fallback.
+ */
+export function getUserSubscriptionRole(userProfile, now = Date.now()) {
+  const role = normalizeRole(
+    userProfile?.subscription?.plan ??
+      userProfile?.subscriptionPlan ??
+      userProfile?.role ??
+      UserRole.FREE,
+  );
+
+  if (role === UserRole.FREE) return UserRole.FREE;
+
+  const status = getSubscriptionStatus(userProfile);
+  if (!["active", "trial", "trialing"].includes(status)) {
+    return UserRole.FREE;
+  }
+
+  const expiry = toEpochMilliseconds(getSubscriptionExpiry(userProfile));
+  if (expiry !== null && expiry < now) return UserRole.FREE;
+
+  return role;
+}
+
 export const RolePermissions = {
   [UserRole.FREE]: {
     // Scan features
@@ -156,7 +211,7 @@ export const RolePermissions = {
  * Jika user punya customPermissions, merge dengan default role permissions
  */
 export function getUserPermissions(userProfile) {
-  const normalizedRole = normalizeRole(userProfile?.role || UserRole.FREE);
+  const normalizedRole = getUserSubscriptionRole(userProfile);
   const defaultPermissions =
     RolePermissions[normalizedRole] || RolePermissions[UserRole.FREE];
 
